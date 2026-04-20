@@ -10,6 +10,9 @@ from alembic import context
 from src.config import settings
 from src.postgres.base import Base
 from src.user.model import UserOrm
+from src.guild.model import GuildOrm
+from src.channel.model import ChannelOrm
+from src.message.model import MessageOrm
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

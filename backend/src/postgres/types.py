@@ -16,6 +16,7 @@ uuid_pk = Annotated[
     ),
 ]
 str_128 = Annotated[str, mapped_column(String(128))]
+str_1024 = Annotated[str, mapped_column(String(1024))]
 created_at = Annotated[
     datetime,
     mapped_column(
