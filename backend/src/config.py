@@ -4,10 +4,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=[".env", "../.env"],
         env_ignore_empty=True,
         extra="ignore",
     )
+
+    APP_NAME: str = "FastAPI"
 
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
