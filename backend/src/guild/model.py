@@ -3,14 +3,13 @@ from uuid import UUID
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.postgres.base import Base
-from src.postgres.types import str_128, uuid_pk, created_at
+from src.postgres.base import UUIDBase
+from src.postgres.types import str_128, created_at
 
 
-class GuildOrm(Base):
+class GuildOrm(UUIDBase):
     __tablename__ = "guilds"
 
-    id: Mapped[uuid_pk]
     name: Mapped[str_128]
     owner_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     icon_url: Mapped[str_128 | None]
