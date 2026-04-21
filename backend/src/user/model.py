@@ -1,13 +1,12 @@
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.postgres.base import Base
+from src.postgres.base import UUIDBase
 from src.postgres.types import uuid_pk, str_128, created_at
 
 
-class UserOrm(Base):
+class UserOrm(UUIDBase):
     __tablename__ = "users"
 
-    id: Mapped[uuid_pk]
     name: Mapped[str_128]
     username: Mapped[str_128] = mapped_column(unique=True)
     email: Mapped[str_128] = mapped_column(unique=True)
