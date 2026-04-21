@@ -13,6 +13,7 @@ from src.core.postgres import Base
 # required to load all ORM models for Alembic autogenerate
 import src.core.models  # noqa
 
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
