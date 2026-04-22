@@ -13,7 +13,12 @@ class ChatService(BaseService):
         super().__init__(session)
         self.chat_repo = chat_repo
 
-    async def create_chat(self, user_id1: UUID, user_id2: UUID):
+    
+
+
+
+    # Function for other service
+    async def create_direct_chat(self, user_id1: UUID, user_id2: UUID):
 
         chat = await self.chat_repo.create_chat(type=ChatType.DIRECT)
 

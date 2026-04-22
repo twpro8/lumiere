@@ -15,6 +15,11 @@ class ChatOrm(UUIDBase):
     """Chats Table"""
     __tablename__ = 'chats'
     
+    
+    # Name
+    # Photo
+    owner_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    
     type: Mapped[ChatType] = mapped_column(SAEnum(ChatType), nullable=False)
 
     created_at: Mapped[created_at]
