@@ -11,5 +11,9 @@ class ChatSchema(BaseSchema):
 class ChatSchemaDTO(ChatSchema):
     id: UUID
 
-class CreateGroupChatSchema(BaseSchema):
-    ...
+class ChatSchemasResponse(BaseSchema):
+    id: UUID
+    chat_name: str | None
+    photo_url: str | None
+    created_at: created_at
+    type: str

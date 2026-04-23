@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.postgres import UUIDBase
 from src.core.postgres import str_128, created_at
@@ -13,3 +13,5 @@ class UserOrm(UUIDBase):
     password_hash: Mapped[str_128]
     avatar_url: Mapped[str_128 | None]
     created_at: Mapped[created_at]
+
+    chats: Mapped[list["ChatOrm"]] = relationship(back_populates="members", secondary="chats_members")
