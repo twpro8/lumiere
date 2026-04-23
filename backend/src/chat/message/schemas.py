@@ -8,6 +8,6 @@ class MessageSchema(BaseSchema):
     author_id: UUID
     content: str
 
-class MessageSchemaDto(BaseSchema):
+class MessageSchemaDto(MessageSchema):
     id: UUID
     created_at: created_at

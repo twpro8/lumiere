@@ -17,3 +17,7 @@ class MessageService(BaseService):
         response = await self.message_repo.create(data)
         await self.session.commit()
         return response
+
+    async def get_messages_from_chat(self, chat_id: UUID, offset: int, limit: int = 10):
+        """Get messages from chat"""
+        return await self.message_repo.get_filtered(offset=offset, chat_id=chat_id, limit=limit)

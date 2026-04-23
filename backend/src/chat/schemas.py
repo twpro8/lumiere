@@ -10,3 +10,6 @@ class ChatSchema(BaseSchema):
 
 class ChatSchemaDTO(ChatSchema):
     id: UUID
+
+class CreateGroupChatSchema(BaseSchema):
+    ...
