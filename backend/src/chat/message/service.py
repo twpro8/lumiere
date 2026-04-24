@@ -1,10 +1,11 @@
-from src.core.base_service import BaseService
-from src.chat.message.repository import MessageRepo
-from src.chat.message.schemas import MessageSchema
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from uuid import UUID
+from src.chat.message.repository import MessageRepo
+from src.chat.message.schemas import MessageSchema
+from src.core.base_service import BaseService
+
 
 class MessageService(BaseService):
 
@@ -20,4 +21,6 @@ class MessageService(BaseService):
 
     async def get_messages_from_chat(self, chat_id: UUID, offset: int, limit: int = 10):
         """Get messages from chat"""
-        return await self.message_repo.get_filtered(offset=offset, chat_id=chat_id, limit=limit)
+        return await self.message_repo.get_filtered(
+            offset=offset, chat_id=chat_id, limit=limit
+        )

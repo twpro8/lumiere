@@ -8,6 +8,7 @@ dependencies = [
     "alembic>=1.18.4",
     "asyncpg>=0.31.0",
     "fastapi>=0.136.0",
+    "isort>=8.0.1",
     "pydantic-settings>=2.13.1",
     "redis>=7.4.0",
     "sqlalchemy>=2.0.49",

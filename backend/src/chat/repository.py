@@ -1,17 +1,17 @@
-from sqlalchemy import and_, case, exists, select, text
-from src.core.base_repository import BaseRepository
-from src.chat.model import ChatMemberOrm, ChatOrm, ChatType
-from src.chat.schemas import ChatSchemaDTO
-from sqlalchemy.orm import aliased, selectinload
 from uuid import UUID
 
-from src.user.model import UserOrm
+from sqlalchemy import text
+
+from src.chat.model import ChatMemberOrm, ChatOrm, ChatType
+from src.chat.schemas import ChatSchemaDTO
+from src.core.base_repository import BaseRepository
+
 
 class ChatRepo(BaseRepository[ChatOrm, ChatSchemaDTO]):
-    
-    async def create_chat(self, type: ChatType) -> ChatOrm:
+
+    async def create_chat(self, chat_type: ChatType) -> ChatOrm:
         """Create chat"""
-        chat = ChatOrm(type=type) #!
+        chat = ChatOrm(type=chat_type)  #!
         self.session.add(chat)
         await self.session.flush()
         return chat
@@ -21,8 +21,8 @@ class ChatRepo(BaseRepository[ChatOrm, ChatSchemaDTO]):
         member = ChatMemberOrm(chat_id=chat_id, user_id=user_id)
         self.session.add(member)
         return member
-    
-    async def exist_dirrect_chat(self, user_id1: UUID, user_id2: UUID):
+
+    async def dirrect_chat_exists(self, user_id1: UUID, user_id2: UUID):
         """Check if dirrect chat between users alredy exist"""
 
         query = text("""
@@ -33,13 +33,15 @@ class ChatRepo(BaseRepository[ChatOrm, ChatSchemaDTO]):
             LIMIT 1
 """)
 
-        result = await self.session.execute(query, {
-            "user_id1": str(user_id1),
-            "user_id2": str(user_id2),
-        })
+        result = await self.session.execute(
+            query,
+            {
+                "user_id1": str(user_id1),
+                "user_id2": str(user_id2),
+            },
+        )
 
         return result.scalar_one_or_none()
-
 
     async def get_all_chats(self, user_id: UUID):
         """Get all chats via sql"""
@@ -56,7 +58,6 @@ class ChatRepo(BaseRepository[ChatOrm, ChatSchemaDTO]):
                     join chats_members ca on cm.chat_id = ca.chat_id
                     join users u on u.id = ca.user_id and ca.user_id != :user_id
                      """)
-        
-        data = await self.session.execute(query, {"user_id" : str(user_id)})
+
+        data = await self.session.execute(query, {"user_id": str(user_id)})
         return data.mappings().all()
-    

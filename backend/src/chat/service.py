@@ -1,21 +1,12 @@
-from src.core.base_service import BaseService
-from src.chat.repository import ChatRepo
-from src.chat.schemas import ChatSchema
-from src.chat.model import ChatType
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from uuid import UUID
+from src.chat.exceptions import DirectChatAlreadyExistException
+from src.chat.model import ChatType
+from src.chat.repository import ChatRepo
+from src.core.base_service import BaseService
 
-from pydantic import BaseModel
-from datetime import datetime
-
-class ChatListItemSchema(BaseModel):
-    id: UUID
-    type: ChatType
-    created_at: datetime
-    avatar_url: str | None
-    username: str | None
 
 class ChatService(BaseService):
 
@@ -26,15 +17,16 @@ class ChatService(BaseService):
     async def get_all_chats(self, user_id: UUID):
         """Get all user's chat"""
         return await self.chat_repo.get_all_chats(user_id)
-    
+
     # Function for other service
     async def create_direct_chat(self, user_id1: UUID, user_id2: UUID):
 
-        existing = await self.chat_repo.exist_dirrect_chat(user_id1=user_id1, user_id2=user_id2)
-        
-        if existing:
+        existing = await self.chat_repo.dirrect_chat_exists(
+            user_id1=user_id1, user_id2=user_id2
+        )
 
-            return "Already exist"
+        if existing:
+            raise DirectChatAlreadyExistException
 
         chat = await self.chat_repo.create_chat(type=ChatType.DIRECT)
 
