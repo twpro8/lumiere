@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import computed_field, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -10,6 +12,8 @@ class Settings(BaseSettings):
     )
 
     APP_NAME: str = "FastAPI"
+    APP_ENV: Literal["development", "testing", "production"] = "development"
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
