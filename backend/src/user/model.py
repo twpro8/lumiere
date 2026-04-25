@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.postgres.base import UUIDBase
-from src.postgres.types import uuid_pk, str_128, created_at
+from src.core.postgres import UUIDBase
+from src.core.postgres import str_128, created_at
 
 
 class UserOrm(UUIDBase):

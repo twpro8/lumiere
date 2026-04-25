@@ -4,7 +4,7 @@ from typing import cast, Callable, Any
 
 import structlog
 
-from src.config import settings
+from src.core.config import settings
 
 
 def configure_logging() -> None:
