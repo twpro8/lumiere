@@ -21,6 +21,15 @@ class Settings(BaseSettings):
     POSTGRES_PASS: str
     POSTGRES_DB: str
 
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_USER: str = "default"
+    REDIS_PASSWORD: str
+    REDIS_MAX_CONNECTIONS: int = 50
+    REDIS_SOCKET_TIMEOUT: int = 5
+    REDIS_SOCKET_CONNECT_TIMEOUT: int = 2
+    REDIS_RETRY_ON_TIMEOUT: bool = True
+
     @computed_field  # type: ignore
     @property
     def DATABASE_URL(self) -> PostgresDsn:
@@ -32,6 +41,11 @@ class Settings(BaseSettings):
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
         )
+
+    @computed_field  # type: ignore
+    @property
+    def REDIS_URL(self) -> str:
+        return f"redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}"
 
 
 settings = Settings()  # type: ignore

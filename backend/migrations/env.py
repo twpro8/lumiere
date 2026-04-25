@@ -7,17 +7,17 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from src.config import settings
-from src.postgres.base import UUIDBase
-from src.user.model import UserOrm
-from src.guild.model import GuildOrm
-from src.channel.model import ChannelOrm
-from src.message.model import MessageOrm
+from src.core.config import settings
+from src.core.postgres import Base
+
+# required to load all ORM models for Alembic autogenerate
+import src.core.models  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
@@ -27,7 +27,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = UUIDBase.metadata
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
