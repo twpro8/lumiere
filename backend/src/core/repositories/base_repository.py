@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from sqlalchemy import insert, select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.base_schema import BaseSchema
-from src.postgres.base import UUIDBase
+from src.core.schemas.base_schema import BaseSchema
+from src.core.postgres import UUIDBase
 
 
 class BaseRepository[T: UUIDBase, R: BaseSchema]:

@@ -1,7 +1,7 @@
 from redis.asyncio import Redis, from_url
 from redis.exceptions import AuthenticationError, ConnectionError
 
-from src.config import settings
+from src.core.config import settings
 from src.core.logging import get_logger
 
 logger = get_logger(__name__)

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase
 
-from src.postgres.mixins import UUIDMixin
+from src.core.postgres.mixins import UUIDMixin
 
 
 class Base(DeclarativeBase):

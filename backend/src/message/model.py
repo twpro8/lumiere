@@ -3,8 +3,8 @@ from uuid import UUID
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.postgres.base import UUIDBase
-from src.postgres.types import str_1024, uuid_pk, created_at
+from src.core.postgres import UUIDBase
+from src.core.postgres import str_1024, created_at
 
 
 class MessageOrm(UUIDBase):
