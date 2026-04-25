@@ -6,18 +6,27 @@ from fastapi import FastAPI
 from src.config import settings
 from src.user import router as user_router
 from src.core.logging import configure_logging, get_logger
+from src.core.redis import init_redis, close_redis
 
 logger = get_logger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # startup
+    # --- Startup ---
     configure_logging()
     logger.info("app.startup", env=settings.APP_ENV)
+
+    # Initialize Redis connection pool
+    app.state.redis = await init_redis()
+
     yield
-    # shutdown
+
+    # --- Shutdown ---
     logger.info("app.shutdown")
+
+    # Gracefully close Redis connection
+    await close_redis(app.state.redis)
 
 
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
