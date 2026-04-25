@@ -4,7 +4,7 @@ import jwt
 from fastapi import HTTPException
 from pwdlib import PasswordHash
 
-from backend.src.config import settings
+from src.core.config import settings
 
 password_hash = PasswordHash.recommended()
 
@@ -26,16 +26,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return password_hash.verify(plain_password, hashed_password)
 
 
-def create_access_token(user_data: dict) -> str:
+def create_access_token(token_data: dict) -> str:
     """
     Function for creating access token
-    :param user_data: user data
+    :param token_data: data for token
     :return: access token
     """
-    user_data_c = user_data.copy()
+    token_data_c = token_data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    user_data_c |= {'expire': expire}
-    return jwt.encode(user_data_c, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    token_data_c |= {'expire': expire.isoformat()}
+    return jwt.encode(token_data_c, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 def decode_token(token: str) -> dict:
     """
