@@ -3,7 +3,9 @@ from typing import Annotated
 
 from fastapi import Request, HTTPException, Depends
 
+from src.core.dependencies import SessionDep
 from src.auth.security import decode_token
+from src.user.service import UserService
 
 def get_token(request: Request) -> str:
     """get access token"""
@@ -20,5 +22,13 @@ def get_current_user_id(access_token: str = Depends(get_token)) -> int:
                             detail='User ID not found in token!')
     return user_id
 
+async def get_user_service(
+    session: SessionDep
+) -> UserService:
+    """get user service"""
+    return UserService(session)
+
+
+UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 
 UserIdDep = Annotated[UUID, Depends(get_current_user_id)]
