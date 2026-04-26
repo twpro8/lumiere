@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.chat.message.repository import MessageRepo
 from src.chat.message.service import MessageService
-from src.postgres.session import get_session
+from src.core.postgres.session import get_session
 
 
 def get_message_repo(session: AsyncSession = Depends(get_session)) -> MessageRepo:

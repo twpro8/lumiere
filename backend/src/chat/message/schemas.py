@@ -1,7 +1,7 @@
 from uuid import UUID
 
-from src.core.base_schema import BaseSchema
-from src.postgres.types import created_at
+from src.core.postgres.types import created_at
+from src.core.schemas import BaseSchema
 
 
 class MessageSchema(BaseSchema):

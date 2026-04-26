@@ -1,7 +1,6 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-
 from src.chat.message.dependencies import MessageServiceDep
 from src.chat.message.schemas import MessageSchema, MessageSchemaDto
 

@@ -4,9 +4,8 @@ from uuid import UUID
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from src.postgres.base import UUIDBase
-from src.postgres.types import created_at
+from src.core.postgres.base import UUIDBase
+from src.core.postgres.types import created_at
 from src.user.model import UserOrm
 
 

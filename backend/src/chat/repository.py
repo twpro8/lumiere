@@ -1,29 +1,41 @@
 from uuid import UUID
 
 from sqlalchemy import text
-
 from src.chat.model import ChatMemberOrm, ChatOrm, ChatType
 from src.chat.schemas import ChatSchemaDTO
-from src.core.base_repository import BaseRepository
+from src.core.repositories import BaseRepository
 
 
 class ChatRepo(BaseRepository[ChatOrm, ChatSchemaDTO]):
 
-    async def create_chat(self, chat_type: ChatType) -> ChatOrm:
-        """Create chat"""
-        chat = ChatOrm(type=chat_type)  #!
+    async def create_dirrect_chat(self) -> ChatOrm:
+        """Create dirrect chat"""
+
+        chat = ChatOrm(type=ChatType.DIRECT)  #!
+        self.session.add(chat)
+        await self.session.flush()
+        return chat
+
+    async def create_group_chat(self, owner_id: UUID, name: str, photo_url: str):
+        """Create group chat"""
+
+        chat = ChatOrm(
+            type=ChatType.GROUP, name=name, photo_url=photo_url, owner_id=owner_id
+        )
         self.session.add(chat)
         await self.session.flush()
         return chat
 
     async def add_member(self, chat_id: UUID, user_id: UUID) -> ChatMemberOrm:
         """Add member to chat"""
+
         member = ChatMemberOrm(chat_id=chat_id, user_id=user_id)
         self.session.add(member)
+        await self.session.flush()
         return member
 
     async def dirrect_chat_exists(self, user_id1: UUID, user_id2: UUID):
-        """Check if dirrect chat between users alredy exist"""
+        """Check if direct chat between users alredy exist"""
 
         query = text("""
             SELECT c.id FROM chats c
@@ -32,7 +44,6 @@ class ChatRepo(BaseRepository[ChatOrm, ChatSchemaDTO]):
             WHERE c.type = 'DIRECT'
             LIMIT 1
 """)
-
         result = await self.session.execute(
             query,
             {

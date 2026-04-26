@@ -1,8 +1,8 @@
 from uuid import UUID
 
 from src.chat.model import ChatType
-from src.core.base_schema import BaseSchema
-from src.postgres.types import created_at
+from src.core.postgres.types import created_at
+from src.core.schemas import BaseSchema
 
 
 class ChatSchema(BaseSchema):
@@ -14,9 +14,16 @@ class ChatSchemaDTO(ChatSchema):
     id: UUID
 
 
+class CreateGroupChatSchema(BaseSchema):
+    members_ids: list[UUID]
+    name: str
+    photo_url: str
+
+
+# Response Schemas
 class ChatSchemasResponse(BaseSchema):
     id: UUID
-    chat_name: str | None
+    name: str | None
     photo_url: str | None
     created_at: created_at
     type: str

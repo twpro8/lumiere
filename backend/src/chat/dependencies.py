@@ -2,10 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.chat.repository import ChatRepo
 from src.chat.service import ChatService
-from src.postgres.session import get_session
+from src.core.postgres.session import get_session
 
 
 def get_chat_repo(session: AsyncSession = Depends(get_session)) -> ChatRepo:
