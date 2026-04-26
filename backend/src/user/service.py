@@ -27,11 +27,11 @@ class UserService(BaseService):
         :param user_data: - user data
         """
         try:
-            user_data_add = UserCreateSchema(
+            user_data_to_add = UserCreateSchema(
                 **user_data.model_dump(),
                 password_hash=hash_password(user_data.password)
             )
-            await UserRepository(self.session).create(user_data_add)
+            await UserRepository(self.session).create(user_data_to_add)
             await self.session.commit()
         except IntegrityError:
             raise HTTPException(status_code=409, detail="User already exists!")
