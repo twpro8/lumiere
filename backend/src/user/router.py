@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response
 
-from src.user.schemas import UserCreateRequestSchema, UserLoginSchema
+from src.user.schemas import UserCreateRequestSchema, UserLoginSchema, UserSchema
 from src.user.dependencies import UserIdDep, UserServiceDep
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -20,7 +20,7 @@ async def login_user(
         data_login: UserLoginSchema,
         response: Response,
         service: UserServiceDep,
-):
+) -> dict[str, str]:
     """Login user"""
     await service.authenticate_user(data_login, response)
     return {'detail': 'User successfully logged in!'}
@@ -30,6 +30,6 @@ async def login_user(
 async def current_user(
         user_id: UserIdDep,
         service: UserServiceDep,
-):
+) -> UserSchema:
     """Get current user"""
     return await service.get_current_user(user_id)
