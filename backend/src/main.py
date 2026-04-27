@@ -9,7 +9,7 @@ from src.core.logging import configure_logging, get_logger
 from src.core.redis import init_redis, close_redis
 from src.chat.router import router as chat_router
 from src.chat.message.router import router as chat_message_router
-
+from src.chat.handlers import register_chat_handlers
 
 logger = get_logger(__name__)
 
@@ -36,6 +36,7 @@ app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 app.include_router(user_router)
 app.include_router(chat_router)
 app.include_router(chat_message_router)
+register_chat_handlers(app)
 
 @app.get("/")
 async def root() -> dict[str, str]:

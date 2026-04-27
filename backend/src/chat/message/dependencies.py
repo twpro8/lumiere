@@ -2,7 +2,6 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.chat.message.repository import MessageRepo
 from src.chat.message.service import MessageService
 from src.core.postgres.session import get_session

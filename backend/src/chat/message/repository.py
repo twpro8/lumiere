@@ -2,7 +2,6 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.chat.message.schemas import MessageSchema, MessageSchemaDto
 from src.chat.model import ChatMemberOrm, ChatMessageOrm
 from src.core.repositories import BaseRepository

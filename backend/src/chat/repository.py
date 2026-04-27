@@ -8,7 +8,7 @@ from src.core.repositories import BaseRepository
 
 class ChatRepo(BaseRepository[ChatOrm, ChatSchemaDTO]):
 
-    async def create_dirrect_chat(self) -> ChatOrm:
+    async def create_direct_chat(self) -> ChatOrm:
         """Create dirrect chat"""
 
         chat = ChatOrm(type=ChatType.DIRECT)  #!
