@@ -8,10 +8,10 @@ router = APIRouter(prefix="/chat/message", tags=["chats_messages"])
 
 
 @router.post("/create", response_model=MessageSchemaDto)
-async def create_chat(service: MessageServiceDep, data: MessageSchema):
+async def create_chat(service: MessageServiceDep, data: MessageSchema, author_id: UUID):
     """Create message"""
 
-    return await service.create_message(data)
+    return await service.create_message(data, author_id)
 
 
 @router.get("/get_all", response_model=list[MessageSchemaDto])

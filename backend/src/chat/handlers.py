@@ -2,6 +2,7 @@ from fastapi import Request, FastAPI
 from fastapi.responses import JSONResponse
 from src.chat.exceptions import ChatException, MessageException
 
+
 def register_chat_handlers(app: FastAPI):
 
     @app.exception_handler(ChatException)

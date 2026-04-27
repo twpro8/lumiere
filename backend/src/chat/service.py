@@ -21,8 +21,10 @@ class ChatService(BaseService):
     async def create_group_chat(self, owner_id: UUID, data: CreateGroupChatSchema):
         """Create Group chat"""
 
-        chat = await self.chat_repo.create_group_chat(**data.model_dump(exclude={"members_ids"}), owner_id=owner_id)
-        
+        chat = await self.chat_repo.create_group_chat(
+            **data.model_dump(exclude={"members_ids"}), owner_id=owner_id
+        )
+
         members_ids = [*data.members_ids, owner_id]
         chat_id = chat.id
 

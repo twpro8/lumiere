@@ -62,7 +62,7 @@ class ChatRepo(BaseRepository[ChatOrm, ChatSchemaDTO]):
                     	c.id, 
                     	c.created_at,
                         c.type,
-                    	case when c.type = 'DIRECT' then u.username else c.name end as chat_name,
+                    	case when c.type = 'DIRECT' then u.username else c.name end as name,
                     	case when c.type = 'DIRECT' then u.avatar_url else c.photo_url end as photo_url
                     from chats c
                     join chats_members cm on cm.chat_id = c.id and cm.user_id = :user_id

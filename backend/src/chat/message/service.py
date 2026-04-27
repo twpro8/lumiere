@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.chat.exceptions import UserIsNotMemberOfChat
 from src.chat.message.repository import MessageRepo
-from src.chat.message.schemas import MessageSchema
+from src.chat.message.schemas import MessageSchema, MessageCreateSchema
 from src.core.services import BaseService
 
 
@@ -13,17 +13,19 @@ class MessageService(BaseService):
         super().__init__(session)
         self.message_repo = message_repo
 
-    async def create_message(self, data: MessageSchema):
+    async def create_message(self, data: MessageSchema, author_id: UUID):
         """Create message"""
 
         check_access = await self.message_repo.is_chat_member(
-            user_id=data.author_id, chat_id=data.chat_id
+            user_id=author_id, chat_id=data.chat_id
         )
 
-        if check_access == None:
+        if check_access is None:
             raise UserIsNotMemberOfChat
 
-        response = await self.message_repo.create(data)
+        new_data = MessageCreateSchema(content=data.content, chat_id=data.chat_id, author_id=author_id)
+
+        response = await self.message_repo.create(new_data)
         await self.session.commit()
         return response
 

@@ -18,3 +18,5 @@ class MessageRepo(BaseRepository[ChatMessageOrm, MessageSchemaDto]):
         query = select(ChatMemberOrm.id).filter_by(chat_id=chat_id, user_id=user_id)
         results = await self.session.execute(query)
         return results.scalar_one_or_none()
+    
+
