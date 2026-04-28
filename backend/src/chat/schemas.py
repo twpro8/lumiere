@@ -7,24 +7,26 @@ from src.core.schemas import BaseSchema
 
 
 class ChatSchema(BaseSchema):
-    type: ChatType
-    created_at: created_at
-
-
-class ChatSchemaDTO(ChatSchema):
     id: UUID
+    created_at: created_at
+    type: ChatType
+    name: str | None
+    photo_url: str | None
 
 
-class CreateGroupChatSchema(BaseSchema):
+class ChatCreateSchema(BaseSchema):
     members_ids: list[UUID] = Field(min_length=2, max_length=9)
     name: str
     photo_url: str
 
 
-# Response Schemas
-class ChatSchemasResponse(BaseSchema):
-    id: UUID
-    name: str | None
-    photo_url: str | None
+# Members
+class MemberSchema(BaseSchema):
     created_at: created_at
-    type: str
+    user_id: UUID
+    chat_id: UUID
+
+
+class MemberCreateSchema(BaseSchema):
+    user_id: UUID
+    chat_id: UUID

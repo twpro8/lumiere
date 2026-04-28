@@ -5,13 +5,18 @@ from src.core.schemas import BaseSchema
 
 
 class MessageSchema(BaseSchema):
+    id: UUID
+    author_id: UUID
+    chat_id: UUID
+    content: str
+    created_at: created_at
+
+
+class MessageCreateSchema(BaseSchema):
     chat_id: UUID
     content: str
 
-class MessageCreateSchema(MessageSchema):
-    author_id: UUID
 
-class MessageSchemaDto(MessageSchema):
-    id: UUID
-    created_at: created_at
-    
+# Will delete
+class MessageCreateAuthSchema(MessageCreateSchema):
+    author_id: UUID
