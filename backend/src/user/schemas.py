@@ -49,3 +49,16 @@ class UserLoginSchema(BaseSchema):
 
     username: str
     password: str
+
+
+class UserReadSchema(BaseSchema):
+    """
+    Schema for get a user
+    """
+
+    id: UUID
+    name: str
+    username: str
+    email: str
+    avatar_url: str | None
+    created_at: datetime

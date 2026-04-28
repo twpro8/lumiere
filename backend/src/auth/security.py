@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 import jwt
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from pwdlib import PasswordHash
 
 from src.core.config import settings
@@ -64,4 +64,6 @@ def decode_token(token: str) -> AccessTokenPayload:
             raise ValueError("No sub UUID provided")
         return AccessTokenPayload(sub=sub)
     except jwt.exceptions.DecodeError:
-        raise HTTPException(status_code=401, detail="Invalid JWT!")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid JWT!"
+        )

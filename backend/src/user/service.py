@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -39,7 +39,9 @@ class UserService(BaseService):
             await self.user_repository.create(user_data_to_add)
             await self.session.commit()
         except IntegrityError:
-            raise HTTPException(status_code=409, detail="User already exists!")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="User already exists!"
+            )
 
     async def authenticate_user(self, user_data: UserLoginSchema) -> str:
         """
@@ -49,12 +51,14 @@ class UserService(BaseService):
         user = await self.user_repository.get_one(username=user_data.username)
         if not user:
             raise HTTPException(
-                status_code=401, detail="Incorrect username or password!"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password!",
             )
 
         if not verify_password(user_data.password, user.password_hash):
             raise HTTPException(
-                status_code=401, detail="Incorrect username or password!"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password!",
             )
         payload = AccessTokenPayload(sub=user.id)
         return create_access_token(payload)
@@ -67,5 +71,7 @@ class UserService(BaseService):
         """
         user = await self.user_repository.get_one(id=user_id)
         if not user:
-            raise HTTPException(status_code=404, detail="User not found!")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found!"
+            )
         return user
