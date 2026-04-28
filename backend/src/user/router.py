@@ -23,7 +23,8 @@ async def login_user(
     service: UserServiceDep,
 ) -> dict[str, str]:
     """Login user"""
-    await service.authenticate_user(data_login, response)
+    access_token = await service.authenticate_user(data_login)
+    response.set_cookie("access_token", access_token)
     return {"detail": "User successfully logged in!"}
 
 

@@ -1,17 +1,17 @@
 from uuid import UUID
 from typing import Annotated
 
-from fastapi import Request, HTTPException, Depends
+from fastapi import HTTPException, Depends, Cookie
 
 from src.core.dependencies import SessionDep
 from src.auth.security import decode_token
+from src.user.repository import UserRepository
 from src.user.service import UserService
 
 
-def get_token(request: Request) -> str:
+def get_token(access_token: str = Cookie(default=None)) -> str:
     """get access token"""
-    access_token = request.cookies.get("access_token")
-    if not access_token:
+    if access_token is None:
         raise HTTPException(
             status_code=401, detail="You have not provided an access token!"
         )
@@ -26,10 +26,19 @@ def get_current_user_id(access_token: str = Depends(get_token)) -> UUID:
     return user_id
 
 
-async def get_user_service(session: SessionDep) -> UserService:
+async def get_user_service(
+    session: SessionDep, user_repository: UserRepositoryDep
+) -> UserService:
     """get user service"""
-    return UserService(session)
+    return UserService(session, user_repository)
 
+
+async def get_user_repository(session: SessionDep) -> UserRepository:
+    """get user repository"""
+    return UserRepository(session)
+
+
+UserRepositoryDep = Annotated[UserRepository, Depends(get_user_repository)]
 
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 
