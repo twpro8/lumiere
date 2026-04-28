@@ -1,9 +1,9 @@
-import uuid
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import EmailStr
 
-from src.core.schemas.base_schema import BaseSchema
+from src.core.schemas import BaseSchema
 
 
 class UserCreateRequestSchema(BaseSchema):
@@ -33,7 +33,7 @@ class UserSchema(BaseSchema):
     Schema for get a user
     """
 
-    id: uuid.UUID
+    id: UUID
     name: str
     username: str
     email: str
