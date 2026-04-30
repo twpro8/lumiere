@@ -15,7 +15,9 @@ class UserSchema(BaseSchema):
     email: str
     password_hash: str
     avatar_url: str | None
+    is_active: bool
     created_at: datetime
+    updated_at: datetime
 
 
 class UserReadSchema(BaseSchema):
@@ -28,4 +30,6 @@ class UserReadSchema(BaseSchema):
     username: str
     email: str
     avatar_url: str | None
+    is_active: bool
     created_at: datetime
+    updated_at: datetime

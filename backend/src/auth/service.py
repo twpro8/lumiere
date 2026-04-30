@@ -4,9 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.user.repository import UserRepository
 from src.core.services import BaseService
-from src.auth.schemas import (
-    UserCreateSchema,
-)
+from src.auth.schemas import UserCreateSchema
 from src.auth.security import (
     hash_password,
     create_access_token,
