@@ -45,7 +45,7 @@ async def login_user(
         httponly=True,
         secure=settings.secure_cookies,
         samesite="lax",
-        max_age=3600,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
     )
     return SuccessResponse()
