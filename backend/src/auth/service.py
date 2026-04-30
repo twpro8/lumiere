@@ -50,14 +50,14 @@ class AuthService(BaseService):
         user = await self.user_repository.get_one(username=user_data.username)
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password!",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found!",
             )
 
         if not verify_password(user_data.password, user.password_hash):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password!",
+                detail="Incorrect password!",
             )
         payload = AccessTokenPayload(sub=user.id)
         return create_access_token(payload)
