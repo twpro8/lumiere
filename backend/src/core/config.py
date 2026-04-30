@@ -51,5 +51,10 @@ class Settings(BaseSettings):
     def REDIS_URL(self) -> str:
         return f"redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}"
 
+    @property
+    def secure_cookies(self) -> bool:
+        """Enable secure only on production (HTTPS)"""
+        return self.APP_ENV == "production"
+
 
 settings = Settings()  # type: ignore
