@@ -1,5 +1,5 @@
 from src.core.repositories import BaseRepository
-from src.user.model import UserOrm
+from src.user.models import UserOrm
 from src.user.schemas import UserSchema
 
 

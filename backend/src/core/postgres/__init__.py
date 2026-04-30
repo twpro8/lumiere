@@ -4,8 +4,10 @@ from .types import (
     int_pk,
     uuid_pk,
     str_128,
+    str_255,
+    str_512,
     str_1024,
-    created_at,
+    timestamp,
 )
 
 __all__ = [
@@ -14,7 +16,9 @@ __all__ = [
     "int_pk",
     "uuid_pk",
     "str_128",
+    "str_255",
+    "str_512",
     "str_1024",
-    "created_at",
+    "timestamp",
     "get_session",
 ]

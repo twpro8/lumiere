@@ -1,4 +1,4 @@
-"""create users table
+"""create users table and update_updated_at_column function
 
 Revision ID: 2ecc3fe6c712
 Revises:
@@ -31,10 +31,17 @@ def upgrade() -> None:
         sa.Column("name", sa.String(length=128), nullable=False),
         sa.Column("username", sa.String(length=128), nullable=False),
         sa.Column("email", sa.String(length=128), nullable=False),
-        sa.Column("password_hash", sa.String(length=128), nullable=False),
-        sa.Column("avatar_url", sa.String(length=128), nullable=True),
+        sa.Column("password_hash", sa.String(length=255), nullable=False),
+        sa.Column("avatar_url", sa.String(length=512), nullable=True),
+        sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column(
             "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("TIMEZONE('UTC', now())"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("TIMEZONE('UTC', now())"),
             nullable=False,
@@ -43,8 +50,25 @@ def upgrade() -> None:
         sa.UniqueConstraint("email"),
         sa.UniqueConstraint("username"),
     )
+    op.execute(sa.text("""
+        CREATE OR REPLACE FUNCTION update_updated_at_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+          NEW.updated_at = NOW() AT TIME ZONE 'UTC';
+          RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+    """))
+    op.execute(sa.text("""
+        CREATE TRIGGER update_users_updated_at
+        BEFORE UPDATE ON users
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column();
+    """))
 
 
 def downgrade() -> None:
     """Downgrade schema."""
+    op.execute("DROP TRIGGER IF EXISTS update_users_updated_at ON users;")
+    op.execute("DROP FUNCTION IF EXISTS update_updated_at_column();")
     op.drop_table("users")

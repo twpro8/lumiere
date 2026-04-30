@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from src.user.model import UserOrm
+from src.user.models import UserOrm
 from src.user.schemas import UserSchema
 
 
