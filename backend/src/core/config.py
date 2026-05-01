@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     )
 
     APP_NAME: str = "FastAPI"
-    APP_ENV: Literal["development", "testing", "production"] = "development"
+    APP_ENV: Literal["development", "testing", "production"] = "testing"
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 
     POSTGRES_HOST: str = "localhost"
