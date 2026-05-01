@@ -59,4 +59,5 @@ async def async_client() -> AsyncGenerator[AsyncClient, Any]:
 pytest_plugins = [
     "tests.fixtures.session",
     "tests.fixtures.user",
+    "tests.fixtures.chat"
 ]
