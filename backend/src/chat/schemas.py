@@ -20,12 +20,14 @@ class ChatSchema(BaseSchema):
     description: str | None
     owner_id: UUID | None
 
+
 class CreateChatSchema(BaseSchema):
     type: ChatType = ChatType.group
     name: str
     description: str
     image_url: str
     members: Annotated[list[UUID], Field(min_length=2, max_length=9)]
+
 
 class MemberSchema(BaseSchema):
     chat_id: UUID
