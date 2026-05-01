@@ -4,14 +4,18 @@ from uuid import UUID
 from pydantic import BaseModel
 from sqlalchemy import insert, select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import Executable
 
 from src.core.schemas.base_schema import BaseSchema
 from src.core.postgres import UUIDBase
+from src.core.repositories.base_data_mapper import BaseMapper
+from src.core.errors import ObjectNotFoundError
 
 
 class BaseRepository[T: UUIDBase, R: BaseSchema]:
     model: type[T]
     schema: type[R]
+    mapper: type[BaseMapper[T, R]]
 
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
@@ -23,21 +27,15 @@ class BaseRepository[T: UUIDBase, R: BaseSchema]:
         **filter_by: Any,
     ) -> Sequence[R]:
         query = select(self.model).filter_by(**filter_by).limit(limit).offset(offset)
-        result = await self.session.execute(query)
-        models = result.scalars().all()
-        return [self.schema.model_validate(model) for model in models]
+        return await self._execute_and_map_all(query)
 
     async def get_one(self, **filter_by: Any) -> R | None:
         query = select(self.model).filter_by(**filter_by)
-        result = await self.session.execute(query)
-        model = result.scalar_one_or_none()
-        return self.schema.model_validate(model) if model else None
+        return await self._execute_and_map_one_or_none(query)
 
     async def create(self, data: BaseModel) -> R:
         statement = insert(self.model).values(**data.model_dump()).returning(self.model)
-        result = await self.session.execute(statement)
-        model = result.scalar_one()
-        return self.schema.model_validate(model)
+        return await self._execute_and_map_one(statement)
 
     async def update(self, id_: UUID, data: BaseModel) -> R:
         statement = (
@@ -46,10 +44,23 @@ class BaseRepository[T: UUIDBase, R: BaseSchema]:
             .values(**data.model_dump())
             .returning(self.model)
         )
-        result = await self.session.execute(statement)
-        model = result.scalar_one()
-        return self.schema.model_validate(model)
+        return await self._execute_and_map_one(statement)
 
     async def delete(self, id_: UUID) -> None:
         statement = delete(self.model).where(self.model.id == id_)
         await self.session.execute(statement)
+
+    async def _execute_and_map_one(self, query: Executable) -> R:
+        schema = await self._execute_and_map_one_or_none(query)
+        if schema is None:
+            raise ObjectNotFoundError
+        return schema
+
+    async def _execute_and_map_one_or_none(self, query: Executable) -> R | None:
+        result = await self.session.execute(query)
+        model = result.scalars().one_or_none()
+        return self.mapper.to_schema(model) if model else None
+
+    async def _execute_and_map_all(self, query: Executable) -> Sequence[R]:
+        result = await self.session.execute(query)
+        return [self.mapper.to_schema(model) for model in result.scalars().all()]
