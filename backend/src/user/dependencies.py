@@ -17,7 +17,7 @@ def get_current_user_id(access_token: AccessTokenDep) -> UUID:
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User ID not found in token!",
+            detail="User ID not found in token",
         )
     return user_id
 

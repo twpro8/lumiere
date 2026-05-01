@@ -40,7 +40,7 @@ def create_access_token(payload: AccessTokenPayload) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
-    token_data = {"sub": str(payload.sub), "expire": expire.isoformat()}
+    token_data = {"sub": str(payload.sub), "exp": expire}
     return jwt.encode(
         token_data,
         settings.JWT_SECRET_KEY,
@@ -65,5 +65,5 @@ def decode_token(token: str) -> AccessTokenPayload:
         return AccessTokenPayload(sub=sub)
     except jwt.exceptions.DecodeError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid JWT!"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid JWT"
         )

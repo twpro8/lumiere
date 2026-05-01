@@ -37,7 +37,7 @@ class AuthService(BaseService):
             await self.session.commit()
         except IntegrityError:
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="User already exists!"
+                status_code=status.HTTP_409_CONFLICT, detail="User already exists"
             )
 
     async def authenticate_user(self, user_data: UserLoginSchema) -> str:
@@ -49,13 +49,13 @@ class AuthService(BaseService):
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found!",
+                detail="User not found",
             )
 
         if not verify_password(user_data.password, user.password_hash):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect password!",
+                detail="Incorrect password",
             )
         payload = AccessTokenPayload(sub=user.id)
         return create_access_token(payload)
