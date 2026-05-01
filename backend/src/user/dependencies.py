@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from uuid import UUID
 from typing import Annotated
 
@@ -13,13 +14,15 @@ from src.user.service import UserService
 
 def get_current_user_id(access_token: AccessTokenDep) -> UUID:
     """get current user id from access token"""
-    user_id = decode_token(access_token).sub
-    if not user_id:
+    payload = decode_token(access_token)
+    if not payload.sub:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User ID not found in token!",
         )
-    return user_id
+    if payload.expire < datetime.now(timezone.utc):
+        raise HTTPException(401, "Token expired")
+    return payload.sub
 
 
 async def get_current_user(

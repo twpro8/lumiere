@@ -1,9 +1,12 @@
+from datetime import datetime, timezone, timedelta
+
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.user.repository import UserRepository
 from src.core.services import BaseService
+from src.core.config import settings
 from src.auth.schemas import UserCreateSchema
 from src.auth.security import (
     hash_password,
@@ -57,5 +60,8 @@ class AuthService(BaseService):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect password!",
             )
-        payload = AccessTokenPayload(sub=user.id)
+        expire = datetime.now(timezone.utc) + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+        payload = AccessTokenPayload(sub=user.id, expire=expire)
         return create_access_token(payload)

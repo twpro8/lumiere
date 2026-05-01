@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import EmailStr
@@ -9,6 +10,7 @@ from src.core.schemas import BaseSchema
 @dataclass
 class AccessTokenPayload:
     sub: UUID
+    expire: datetime
 
 
 class UserCreateSchema(BaseSchema):
