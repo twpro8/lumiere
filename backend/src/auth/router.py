@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Response, status
 
 from src.auth.dependencies import AuthServiceDep
-from src.core.config import settings
+from src.auth.utils import set_tokens_cookie
 from src.core.schemas import SuccessResponse
+from src.core.dependencies import RefreshTokenDep
 from src.auth.schemas import (
     UserRegisterSchema,
     UserLoginSchema,
@@ -38,14 +39,18 @@ async def login_user(
     service: AuthServiceDep,
 ) -> SuccessResponse:
     """Login user"""
-    access_token = await service.authenticate_user(data_login)
-    response.set_cookie(
-        "access_token",
-        access_token,
-        httponly=True,
-        secure=settings.secure_cookies,
-        samesite="lax",
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        path="/",
-    )
+    tokens = await service.authenticate_user(data_login)
+    set_tokens_cookie(response, tokens.access_token, tokens.refresh_token)
+    return SuccessResponse()
+
+
+@router.post("/refresh", summary="Refresh token")
+async def refresh(
+    service: AuthServiceDep,
+    response: Response,
+    refresh_token: RefreshTokenDep,
+) -> SuccessResponse:
+    """Refresh token"""
+    tokens = await service.refresh(refresh_token)
+    set_tokens_cookie(response, tokens.access_token, tokens.refresh_token)
     return SuccessResponse()
