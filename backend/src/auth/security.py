@@ -1,9 +1,14 @@
-from datetime import datetime, timedelta, timezone
+import json
+import secrets
 from uuid import UUID
 
 import jwt
+import hashlib
+from datetime import datetime, timedelta, timezone
+
 from fastapi import HTTPException, status
 from pwdlib import PasswordHash
+from redis.asyncio import Redis
 
 from src.core.config import settings
 from src.auth.schemas import AccessTokenPayload
@@ -18,6 +23,13 @@ def hash_password(password: str) -> str:
     :return: hashed password
     """
     return password_hash.hash(password)
+
+
+def hash_token(token: str) -> str:
+    """
+    Function for generating hashed token
+    """
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -46,6 +58,14 @@ def create_access_token(payload: AccessTokenPayload) -> str:
         settings.JWT_SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM,
     )
+
+
+def create_refresh_token() -> tuple[str, str]:
+    """Function for creating refresh token"""
+    refresh_token_raw = secrets.token_urlsafe(48)
+    refresh_token_hash = hash_token(refresh_token_raw)
+
+    return refresh_token_raw, refresh_token_hash
 
 
 def decode_token(token: str) -> AccessTokenPayload:
