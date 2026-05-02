@@ -11,6 +11,12 @@ class AccessTokenPayload:
     sub: UUID
 
 
+@dataclass
+class TokenPair:
+    access_token: str
+    refresh_token: str
+
+
 class UserCreateSchema(BaseSchema):
     """
     Schema for creating a user
