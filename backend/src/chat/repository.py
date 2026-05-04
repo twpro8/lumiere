@@ -18,12 +18,10 @@ class ChatRepository(BaseRepository[ChatOrm, ChatSchema]):
     model = ChatOrm
     mapper = ChatMapper
 
-    async def get_all_chats(self, user_id: UUID, offset: int) -> Sequence[ChatSchema]:
+    async def get_all_chats(self, user_id: UUID) -> Sequence[ChatSchema]:
         """Gets all chats in the database"""
 
-        result = await self.session.execute(
-            get_all_chats_sql, {"user_id": user_id, "offset": offset, "limit": 10}
-        )
+        result = await self.session.execute(get_all_chats_sql, {"user_id": user_id})
         chats = result.mappings().all()
 
         return [self.mapper.to_schema(ChatOrm(**chat)) for chat in chats]
