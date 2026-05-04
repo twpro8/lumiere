@@ -14,14 +14,14 @@ from tests.dependency_overrides.redis_client import get_fake_redis_client
 from tests.dependency_overrides.session import get_null_pool_session
 from tests.seeder import populate_database
 
-data_for_register = {
+data_for_registration = {
     "name": "string",
     "username": "string",
     "email": "user@example.com",
     "password": "string",
 }
 
-data_for_login = {"username": "string", "password": "string"}
+data_for_authorization = {"username": "string", "password": "string"}
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -67,8 +67,8 @@ async def async_client() -> AsyncGenerator[AsyncClient, Any]:
 
 @pytest.fixture(name="ac_auth")
 async def ac_auth(ac: AsyncClient) -> AsyncClient:
-    await ac.post("/auth/register", json=data_for_register)
-    response = await ac.post("/auth/login", json=data_for_login)
+    await ac.post("/auth/register", json=data_for_registration)
+    response = await ac.post("/auth/login", json=data_for_authorization)
 
     assert response.status_code == 200
     return ac
