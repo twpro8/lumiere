@@ -7,12 +7,15 @@ from pydantic import Field
 from src.core.schemas.base_schema import BaseSchema
 from src.chat.enums import ChatType, ChatMemberRole
 
+# TODO delete url from schema. Create one more schema to create chat in repo
+
 
 class ChatSchema(BaseSchema):
     id: UUID
     is_archived: bool
     created_at: datetime
     updated_at: datetime
+    type: ChatType
 
     # None for private chats
     image_url: str | None
@@ -21,12 +24,18 @@ class ChatSchema(BaseSchema):
     owner_id: UUID | None
 
 
-class CreateChatSchema(BaseSchema):
+class ChatCreateDBSchema(BaseSchema):
+    type: ChatType = ChatType.private
+    name: str | None = None
+    description: str | None = None
+    owner_id: UUID | None = None
+
+
+class ChatCreateSchema(BaseSchema):
+    members: Annotated[list[UUID], Field(min_length=2, max_length=9)]
     type: ChatType = ChatType.group
     name: str
     description: str
-    image_url: str
-    members: Annotated[list[UUID], Field(min_length=2, max_length=9)]
 
 
 class MemberSchema(BaseSchema):
