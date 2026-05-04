@@ -10,6 +10,7 @@ from src.core.postgres.session import null_pool_session_maker
 from src.main import app
 from src.core.postgres import Base, get_session
 from src.core.models import *  # noqa
+from tests.dependency_overrides.redis_client import get_fake_redis_client
 from tests.dependency_overrides.session import get_null_pool_session
 from tests.seeder import populate_database
 
@@ -23,7 +24,10 @@ def check_test_mode() -> None:
 @pytest.fixture(scope="session", autouse=True)
 def override_dependencies(check_test_mode: None) -> None:
     """Override dependencies once for all tests"""
+    from src.core.dependencies import get_redis
+
     app.dependency_overrides[get_session] = get_null_pool_session
+    app.dependency_overrides[get_redis] = get_fake_redis_client
 
 
 @pytest.fixture(scope="session", autouse=True)
