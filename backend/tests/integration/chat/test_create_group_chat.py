@@ -1,7 +1,6 @@
 import uuid
 from uuid import UUID
 
-import pytest
 from sqlalchemy import select
 
 from src.chat.models import ChatOrm, ChatMemberOrm
@@ -16,6 +15,7 @@ async def test_chat_has_fields(ac_auth, session, create_chat, create_chat_data):
 
     assert chat.name == create_chat_data["name"]
     assert chat.description == create_chat_data["description"]
+    assert chat.image_url == create_chat_data["image_url"]
     assert chat.owner_id is not None
 
 
@@ -45,16 +45,26 @@ async def test_chat_has_owner(ac_auth, session, create_chat):
 
     assert owner.role == ChatMemberRole.owner
 
+# Validation cases
+async def test_eleven_members_returns_422(ac_auth, create_chat_data):
+    """Check that we can't create chat with 11 or more members"""
+
+    import uuid
+    payload = {**create_chat_data, "members": [str(uuid.uuid4()) for _ in range(10)]}
+    response = await ac_auth.post("/chats/", json=payload)
+    assert response.status_code == 422
+
+async def test_two_members_returns_422(ac_auth, create_chat_data):
+    """Check that we can't create chat with 2 or less members."""
+
+    import uuid
+    payload = {**create_chat_data, "members": [str(uuid.uuid4())]}
+    response = await ac_auth.post("/chats/", json=payload)
+    assert response.status_code == 422
 
 async def test_empty_json_returns_422(ac_auth, create_chat_data):
     """Check that we can't create chat with empty JSON."""
 
-    response = await ac_auth.post("/chats", json={})
+    response = await ac_auth.post("/chats/", json={})
     assert response.status_code == 422
 
-
-@pytest.mark.parametrize("members_count", [1, 10])
-async def test_members_validation(ac_auth, create_chat_data, members_count):
-    payload = {**create_chat_data, "members": [str(uuid.uuid4()) for _ in range(members_count)]}
-    response = await ac_auth.post("/chats", json=payload)
-    assert response.status_code == 422
