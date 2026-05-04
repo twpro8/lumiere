@@ -9,4 +9,5 @@ router = APIRouter(prefix="/chats", tags=["chat"])
 
 @router.post("/", response_model=ChatSchema)
 async def create_chat(service: ChatDepends, data: CreateChatSchema, owner_id: UserIdDep) -> ChatSchema:
-    return await service.create_chat(data=data, owner_id=owner_id)
+    chat = await service.create_chat(data=data, owner_id=owner_id)
+    return chat

@@ -7,13 +7,22 @@ from src.chat.models import ChatMemberOrm, ChatOrm
 from src.chat.enums import ChatMemberRole
 from src.core.postgres import UUIDBase
 from src.chat.schemas import ChatSchema, MemberSchema, CreateChatSchema
-from src.core.repositories.base_repository import BaseRepository
-from src.chat.mappers import ChatMapper, MemberMapper
 
-class ChatRepository(BaseRepository[ChatOrm, ChatSchema]):
+class BaseRepository[schemaT: BaseSchema, modelT: UUIDBase]:
+    schema: type[schemaT]
+
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
+    def _validate(self, obj: modelT) -> schemaT:
+        return self.schema.model_validate(obj)
+
+    def _validate_many(self, objs: list[modelT]) -> list[schemaT]:
+        return [self.schema.model_validate(obj) for obj in objs]
+
+
+class ChatRepository(BaseRepository[ChatSchema, ChatOrm]):
     schema = ChatSchema
-    model = ChatOrm
-    mapper = ChatMapper
 
     async def create_group_chat(self, data: CreateChatSchema, owner_id: UUID) -> ChatSchema:
         """Creates a new group chat in the database"""
@@ -22,13 +31,11 @@ class ChatRepository(BaseRepository[ChatOrm, ChatSchema]):
         self.session.add(chat)
         await self.session.flush()
 
-        return self.mapper.to_schema(chat)
+        return self._validate(chat)
 
 
-class MemberRepository(BaseRepository[ChatMemberOrm, MemberSchema]):
+class MemberRepository(BaseRepository[MemberSchema, ChatMemberOrm]):
     schema = MemberSchema
-    model = ChatMemberOrm
-    mapper = MemberMapper
 
     async def add_member(self, user_id: UUID, chat_id: UUID, role: ChatMemberRole) -> MemberSchema:
         """Creates a new member with the given user_id and chat_id"""
@@ -37,7 +44,7 @@ class MemberRepository(BaseRepository[ChatMemberOrm, MemberSchema]):
         self.session.add(member)
         await self.session.flush()
 
-        return self.mapper.to_schema(member)
+        return self._validate(member)
 
     async def add_members(self, members: list[UUID], chat_id: UUID, owner_id: UUID) -> None:
         """Create list of new members with the given user_id and chat_id"""

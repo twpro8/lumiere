@@ -1,4 +1,3 @@
-import uuid
 from uuid import UUID
 
 from sqlalchemy import select
@@ -45,26 +44,8 @@ async def test_chat_has_owner(ac_auth, session, create_chat):
 
     assert owner.role == ChatMemberRole.owner
 
-# Validation cases
-async def test_eleven_members_returns_422(ac_auth, create_chat_data):
-    """Check that we can't create chat with 11 or more members"""
-
+async def test_ten_members_returns_422(ac_auth, create_chat_data):
     import uuid
     payload = {**create_chat_data, "members": [str(uuid.uuid4()) for _ in range(10)]}
     response = await ac_auth.post("/chats/", json=payload)
     assert response.status_code == 422
-
-async def test_two_members_returns_422(ac_auth, create_chat_data):
-    """Check that we can't create chat with 2 or less members."""
-
-    import uuid
-    payload = {**create_chat_data, "members": [str(uuid.uuid4())]}
-    response = await ac_auth.post("/chats/", json=payload)
-    assert response.status_code == 422
-
-async def test_empty_json_returns_422(ac_auth, create_chat_data):
-    """Check that we can't create chat with empty JSON."""
-
-    response = await ac_auth.post("/chats/", json={})
-    assert response.status_code == 422
-

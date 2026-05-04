@@ -27,8 +27,8 @@ async def create_chat_data():
 
 @pytest.fixture(name="ac_auth")
 async def ac_auth(ac):
-    await ac.post("/auth/register", json=data_for_register)
-    response = await ac.post("/auth/login", json=data_for_login)
+    await ac.post("/users/register", json=data_for_register)
+    response = await ac.post("/users/login", json=data_for_login)
 
     assert response.status_code == 200
     return ac
