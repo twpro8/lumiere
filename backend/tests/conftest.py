@@ -14,16 +14,14 @@ from tests.dependency_overrides.session import get_null_pool_session
 from tests.seeder import populate_database
 
 data_for_register = {
-  "name": "string",
-  "username": "string",
-  "email": "user@example.com",
-  "password": "string"
+    "name": "string",
+    "username": "string",
+    "email": "user@example.com",
+    "password": "string",
 }
 
-data_for_login = {
-  "username": "string",
-  "password": "string"
-}
+data_for_login = {"username": "string", "password": "string"}
+
 
 @pytest.fixture(scope="session", autouse=True)
 def check_test_mode() -> None:
@@ -45,7 +43,7 @@ async def setup_database(check_test_mode: None) -> None:
         await conn.run_sync(Base.metadata.create_all)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(autouse=True)
 async def populated_database(setup_database: None) -> AsyncGenerator[AsyncSession]:
     """Populate database"""
     async with null_pool_session_maker() as session:
@@ -64,7 +62,7 @@ async def async_client() -> AsyncGenerator[AsyncClient, Any]:
 
 
 @pytest.fixture(name="ac_auth")
-async def ac_auth(ac):
+async def ac_auth(ac: AsyncClient) -> AsyncClient:
     await ac.post("/auth/register", json=data_for_register)
     response = await ac.post("/auth/login", json=data_for_login)
 
@@ -72,8 +70,17 @@ async def ac_auth(ac):
     return ac
 
 
+@pytest.fixture(autouse=True)
+async def clean_data(session: AsyncSession) -> AsyncGenerator[Any, None]:
+    """Clean database tables"""
+    yield
+    for table in reversed(Base.metadata.sorted_tables):
+        await session.execute(table.delete())
+    await session.commit()
+
+
 pytest_plugins = [
     "tests.fixtures.session",
     "tests.fixtures.user",
-    "tests.fixtures.chat"
+    "tests.fixtures.chat",
 ]

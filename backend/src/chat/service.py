@@ -37,16 +37,14 @@ class ChatService(BaseService):
 
         return chat
 
-    async def get_all_chats(self, user_id: UUID) -> Sequence[ChatSchema]:
+    async def get_all_chats(self, user_id: UUID, offset: int) -> Sequence[ChatSchema]:
         """Gets all chats belonging to a user"""
 
-        chats = await self.chat_repository.get_all_chats(user_id)
+        chats = await self.chat_repository.get_all_chats(user_id, offset=offset)
         return chats
 
     # for other service
-    async def create_private_chat(
-        self, user_id_1: UUID, user_id_2: UUID
-    ) -> ChatSchema:
+    async def create_private_chat(self, user_id_1: UUID, user_id_2: UUID) -> ChatSchema:
         """Creates a new private chat"""
         chat = await self.chat_repository.create(ChatCreateDBSchema())
         await self.member_repository.add_members(
