@@ -18,10 +18,12 @@ get_all_chats_sql = text("""
         ELSE chats.image_url
     END AS image_url
 FROM chats
-JOIN chat_members cm ON cm.chat_id = chats.id 
+JOIN chat_members cm ON cm.chat_id = chats.id
     AND cm.user_id = :user_id
-LEFT JOIN chat_members cc ON cc.chat_id = chats.id 
+LEFT JOIN chat_members cc ON cc.chat_id = chats.id
     AND cc.user_id != :user_id
     AND chats.type = 'private'
 LEFT JOIN users u ON u.id = cc.user_id
+LIMIT :limit
+OFFSET :offset
 """)
