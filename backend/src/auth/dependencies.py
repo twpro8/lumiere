@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import Depends
 
 from src.auth.service import AuthService
-from src.core.dependencies import SessionDep, UserRepositoryDep, RedisDep
+from src.core.dependencies import SessionDep, RedisDep
+from src.user.dependencies import UserRepositoryDep
 
 
 def get_auth_service(
