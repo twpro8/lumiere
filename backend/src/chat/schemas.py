@@ -7,8 +7,6 @@ from pydantic import Field
 from src.core.schemas.base_schema import BaseSchema
 from src.chat.enums import ChatType, ChatMemberRole
 
-# TODO delete url from schema. Create one more schema to create chat in repo
-
 
 class ChatSchema(BaseSchema):
     id: UUID
