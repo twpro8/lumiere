@@ -4,8 +4,8 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 
 from src.core.config import settings
-from src.user import router as user_router
-from src.auth import router as auth_router
+from src.user.router import router as user_router
+from src.auth.router import router as auth_router
 from src.core.logging import configure_logging, get_logger
 from src.core.redis import init_redis, close_redis
 

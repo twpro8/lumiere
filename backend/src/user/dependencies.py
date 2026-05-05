@@ -3,8 +3,7 @@ from typing import Annotated
 
 from fastapi import HTTPException, Depends, status
 
-from src.core.dependencies import SessionDep
-from src.core.dependencies import AccessTokenDep, UserRepositoryDep
+from src.core.dependencies import AccessTokenDep, SessionDep
 from src.auth.security import decode_token
 from src.user.repository import UserRepository
 from src.user.schemas import UserSchema
@@ -46,3 +45,4 @@ def get_user_repository(session: SessionDep) -> UserRepository:
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 UserIdDep = Annotated[UUID, Depends(get_current_user_id)]
 CurrentUserDep = Annotated[UserSchema, Depends(get_current_user)]
+UserRepositoryDep = Annotated[UserRepository, Depends(get_user_repository)]
