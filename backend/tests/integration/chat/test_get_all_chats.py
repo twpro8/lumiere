@@ -1,8 +1,17 @@
 import pytest
 from uuid import UUID
 
-CHAT_FIELDS = {"id", "name", "description", "owner_id", "image_url",
-               "is_archived", "created_at", "updated_at", "type"}
+CHAT_FIELDS = {
+    "id",
+    "name",
+    "description",
+    "owner_id",
+    "image_url",
+    "is_archived",
+    "created_at",
+    "updated_at",
+    "type",
+}
 
 
 @pytest.fixture(name="create_chat")
@@ -90,7 +99,9 @@ async def test_get_all_chats_no_duplicates(ac_auth, create_chat):
     assert len(ids) == len(set(ids)), "Duplicate chats detected in response"
 
 
-async def test_get_all_chats_group_chat_has_name(ac_auth, create_chat, create_chat_data):
+async def test_get_all_chats_group_chat_has_name(
+    ac_auth, create_chat, create_chat_data
+):
     """Group chat must expose its real name, not null."""
 
     await create_chat()
@@ -118,5 +129,6 @@ async def test_get_all_chats_returns_all_created_chats(
     response = await ac_auth.get("/chats")
     assert response.status_code == 200
     assert len(response.json()) == count_before + chat_count
+
 
 # TODO create private chat tests

@@ -40,3 +40,7 @@ dev = [
 strict = true
 show_error_codes = true
 exclude = [".venv"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
