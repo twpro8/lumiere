@@ -64,7 +64,9 @@ class ChatRepository(BaseRepository[ChatOrm, ChatSchema]):
         )
 
         result = await self.session.execute(query)
-        return [self.mapper.to_schema(ChatOrm(**row)) for row in result.scalars().all()]
+        return [
+            self.mapper.to_schema(ChatOrm(**row)) for row in result.mappings().all()
+        ]
 
 
 class MemberRepository(BaseRepository[ChatMemberOrm, MemberSchema]):
