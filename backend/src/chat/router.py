@@ -1,11 +1,10 @@
 from typing import Sequence
+from uuid import UUID
 
 from fastapi import APIRouter
 
-from uuid import UUID
-
-from src.chat.schemas import ChatCreateSchema, ChatSchema
 from src.chat.dependencies import ChatServiceDep
+from src.chat.schemas import ChatCreateSchema, ChatSchema
 from src.user.dependencies import UserIdDep
 
 router = APIRouter(prefix="/chats", tags=["chat"])
@@ -20,13 +19,24 @@ async def create_chat(
     return await service.create_chat(data=data, owner_id=owner_id)
 
 
-@router.get("")
+@router.get("", response_model=list[ChatSchema])
 async def get_all_chats(
     service: ChatServiceDep,
     user_id: UserIdDep,
     offset: int = 0,
 ) -> Sequence[ChatSchema]:
     return await service.get_all_chats(user_id=user_id, offset=offset)
+
+
+@router.get("/{chat_id}", response_model=ChatSchema)
+async def get_chat(
+    service: ChatServiceDep,
+    owner_id: UserIdDep,
+    chat_id: UUID,
+) -> ChatSchema | None:
+    """Gets a chat by its id"""
+
+    return await service.get_chat(chat_id=chat_id)
 
 
 # Will delete

@@ -1,18 +1,18 @@
 from typing import Sequence
 from uuid import UUID
 
-from sqlalchemy import select, case
+from sqlalchemy import case, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 from sqlalchemy.testing.pickleable import User
 
-from src.core.schemas.base_schema import BaseSchema
-from src.chat.models import ChatMemberOrm, ChatOrm
 from src.chat.enums import ChatMemberRole, ChatType
-from src.core.postgres import UUIDBase
-from src.chat.schemas import ChatSchema, MemberSchema, ChatCreateSchema
-from src.core.repositories.base_repository import BaseRepository
 from src.chat.mappers import ChatMapper, MemberMapper
+from src.chat.models import ChatMemberOrm, ChatOrm
+from src.chat.schemas import ChatCreateSchema, ChatSchema, MemberSchema
+from src.core.postgres import UUIDBase
+from src.core.repositories.base_repository import BaseRepository
+from src.core.schemas.base_schema import BaseSchema
 from src.user.models import UserOrm
 
 

@@ -3,9 +3,9 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.chat.schemas import ChatCreateSchema, ChatSchema, ChatCreateDBSchema
-from src.core.services.base_service import BaseService
 from src.chat.repository import ChatRepository, MemberRepository
+from src.chat.schemas import ChatCreateDBSchema, ChatCreateSchema, ChatSchema
+from src.core.services.base_service import BaseService
 
 
 class ChatService(BaseService):
@@ -42,6 +42,12 @@ class ChatService(BaseService):
 
         chats = await self.chat_repository.get_all_chats(user_id, offset=offset)
         return chats
+
+    async def get_chat(self, chat_id: UUID) -> ChatSchema | None:
+        """Gets a chat by its id"""
+
+        chat = await self.chat_repository.get_one(id=chat_id)
+        return chat
 
     # for other service
     async def create_private_chat(self, user_id_1: UUID, user_id_2: UUID) -> ChatSchema:
