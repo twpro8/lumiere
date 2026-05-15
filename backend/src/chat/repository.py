@@ -5,7 +5,6 @@ from sqlalchemy import case, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 from sqlalchemy.testing.pickleable import User
-
 from src.chat.enums import ChatMemberRole, ChatType
 from src.chat.mappers import ChatMapper, MemberMapper
 from src.chat.models import ChatMemberOrm, ChatOrm

@@ -2,7 +2,6 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.chat.repository import ChatRepository, MemberRepository
 from src.chat.service import ChatService
 from src.core.dependencies import SessionDep

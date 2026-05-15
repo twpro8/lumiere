@@ -3,7 +3,6 @@ from typing import Annotated
 from uuid import UUID
 
 from pydantic import Field
-
 from src.chat.enums import ChatMemberRole, ChatType
 from src.core.schemas.base_schema import BaseSchema
 

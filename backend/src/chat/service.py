@@ -2,7 +2,6 @@ from typing import Sequence
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.chat.repository import ChatRepository, MemberRepository
 from src.chat.schemas import ChatCreateDBSchema, ChatCreateSchema, ChatSchema
 from src.core.services.base_service import BaseService

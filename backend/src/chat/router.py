@@ -2,7 +2,6 @@ from typing import Sequence
 from uuid import UUID
 
 from fastapi import APIRouter
-
 from src.chat.dependencies import ChatServiceDep
 from src.chat.schemas import ChatCreateSchema, ChatSchema
 from src.user.dependencies import UserIdDep
@@ -31,7 +30,6 @@ async def get_all_chats(
 @router.get("/{chat_id}", response_model=ChatSchema)
 async def get_chat(
     service: ChatServiceDep,
-    owner_id: UserIdDep,
     chat_id: UUID,
 ) -> ChatSchema | None:
     """Gets a chat by its id"""
