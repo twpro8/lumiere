@@ -1,5 +1,5 @@
 from functools import cache
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy import inspect as sa_inspect
 
@@ -8,8 +8,8 @@ from src.core.schemas import BaseSchema
 
 
 class BaseMapper[OrmModel: Base, Schema: BaseSchema]:
-    orm_class: type[OrmModel]
-    schema_class: type[Schema]
+    orm_class: ClassVar[type[OrmModel]]
+    schema_class: ClassVar[type[Schema]]
 
     @classmethod
     def to_schema(cls, orm_obj: OrmModel) -> Schema:
