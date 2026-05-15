@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import EmailStr
@@ -46,3 +47,17 @@ class UserLoginSchema(BaseSchema):
 
     username: str
     password: str
+
+
+class RefreshTokenCreateSchema(BaseSchema):
+    token_hash: str
+    user_id: UUID
+    expires_at: datetime
+
+
+class RefreshTokenSchema(BaseSchema):
+    id: UUID
+    user_id: UUID
+    is_revoked: bool
+    expires_at: datetime
+    created_at: datetime
