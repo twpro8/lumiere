@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from src.chat.dependencies import ChatServiceDep
 from src.chat.schemas import ChatCreateSchema, ChatSchema
 from src.user.dependencies import UserIdDep
+from tests.data import users
 
 router = APIRouter(prefix="/chats", tags=["chat"])
 
@@ -31,10 +32,11 @@ async def get_all_chats(
 async def get_chat(
     service: ChatServiceDep,
     chat_id: UUID,
+    user_id: UserIdDep,
 ) -> ChatSchema | None:
     """Gets a chat by its id"""
 
-    return await service.get_chat(chat_id=chat_id)
+    return await service.get_chat(chat_id=chat_id, user_id=user_id)
 
 
 # Will delete

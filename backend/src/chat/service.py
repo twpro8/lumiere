@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.chat.repository import ChatRepository, MemberRepository
 from src.chat.schemas import ChatCreateDBSchema, ChatCreateSchema, ChatSchema
 from src.core.services.base_service import BaseService
+from src.chat.exceptions import UserIsNotInChatException
 
 
 class ChatService(BaseService):
@@ -42,8 +43,15 @@ class ChatService(BaseService):
         chats = await self.chat_repository.get_all_chats(user_id, offset=offset)
         return chats
 
-    async def get_chat(self, chat_id: UUID) -> ChatSchema | None:
+    async def get_chat(self, chat_id: UUID, user_id: UUID) -> ChatSchema | None:
         """Gets a chat by its id"""
+
+        permission = await self.member_repository.check_user_is_member(
+            user_id=user_id, chat_id=chat_id
+        )
+
+        if permission is False:
+            raise UserIsNotInChatException
 
         chat = await self.chat_repository.get_one(id=chat_id)
         return chat

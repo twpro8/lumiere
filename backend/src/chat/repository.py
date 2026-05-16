@@ -91,3 +91,13 @@ class MemberRepository(BaseRepository[ChatMemberOrm, MemberSchema]):
 
         self.session.add_all(orm_members)
         await self.session.flush()
+
+    async def check_user_is_member(self, chat_id: UUID, user_id: UUID) -> bool:
+        data = await self.session.execute(
+            select(ChatMemberOrm).filter(
+                ChatMemberOrm.chat_id == chat_id, ChatMemberOrm.user_id == user_id
+            )
+        )
+        result = data.scalar_one_or_none()
+
+        return result is not None

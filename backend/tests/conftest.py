@@ -66,12 +66,18 @@ async def async_client() -> AsyncGenerator[AsyncClient, Any]:
 
 
 @pytest.fixture(name="ac_auth")
-async def ac_auth(ac: AsyncClient) -> AsyncClient:
-    await ac.post("/auth/register", json=data_for_registration)
-    response = await ac.post("/auth/login", json=data_for_authorization)
+async def ac_auth() -> AsyncGenerator[AsyncClient, Any]:
 
-    assert response.status_code == 200
-    return ac
+    async with AsyncClient(
+        transport=ASGITransport(app),
+        base_url="http://test",
+    ) as authed_client:
+
+        await authed_client.post("/auth/register", json=data_for_registration)
+        response = await authed_client.post("/auth/login", json=data_for_authorization)
+
+        assert response.status_code == 200
+        yield authed_client
 
 
 @pytest.fixture(autouse=True)
