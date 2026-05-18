@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from types import TracebackType
+from typing import Self
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -57,7 +58,7 @@ class BaseUnitOfWork(ABC):
         """
         self._session = session
 
-    async def __aenter__(self) -> BaseUnitOfWork:
+    async def __aenter__(self) -> Self:
         """
         Enter the asynchronous context manager.
 
