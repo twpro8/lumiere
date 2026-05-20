@@ -1,11 +1,12 @@
 from typing import TYPE_CHECKING
-
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.postgres import UUIDBase, str_128, str_255, str_512, timestamp
 
 if TYPE_CHECKING:
     from src.auth.models import RefreshTokenOrm
+    from src.server.models import ServerOrm
+    from src.server.models import ServerMemberOrm
 
 
 class UserOrm(UUIDBase):
@@ -21,7 +22,18 @@ class UserOrm(UUIDBase):
     # Make sure you have added the trigger to the migration.
     updated_at: Mapped[timestamp]
 
+    # Relationships
     refresh_tokens: Mapped[list["RefreshTokenOrm"]] = relationship(
+        back_populates="user",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+    )
+    owned_servers: Mapped[list["ServerOrm"]] = relationship(
+        back_populates="owner",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+    )
+    joined_servers: Mapped[list["ServerMemberOrm"]] = relationship(
         back_populates="user",
         lazy="selectin",
         cascade="all, delete-orphan",
