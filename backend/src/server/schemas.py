@@ -23,3 +23,13 @@ class ServerCreateRequestSchema(BaseSchema):
 
 class ServerCreateSchema(ServerCreateRequestSchema):
     owner_id: UUID
+
+
+class ServerUpdateRequestSchema(BaseSchema):
+    name: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = Field(None, max_length=300)
+
+
+class ServerUpdateSchema(ServerUpdateRequestSchema):
+    id: UUID
+    owner_id: UUID
