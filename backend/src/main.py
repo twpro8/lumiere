@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from src.core.config import settings
 from src.user.router import router as user_router
 from src.auth.router import router as auth_router
+from src.server import router as server_router
 from src.core.logging import configure_logging, get_logger
 from src.core.redis import init_redis, close_redis
 
@@ -33,6 +34,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(user_router)
+app.include_router(server_router)
 
 
 @app.get("/")
