@@ -1,4 +1,5 @@
 from uuid import UUID
+from fastapi import HTTPException, status
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +10,8 @@ from src.server.schemas import (
     ServerCreateRequestSchema,
     ServerCreateSchema,
     ServerSchema,
+    ServerUpdateRequestSchema,
+    ServerUpdateSchema,
 )
 from src.channel.service import ChannelService
 from src.server.server_member.service import ServerMemberService
@@ -57,3 +60,56 @@ class ServerService(BaseService):
         except SQLAlchemyError as e:
             await self.session.rollback()
             raise e
+
+    async def update_server(
+        self,
+        update_data: ServerUpdateRequestSchema,
+        server_id: UUID,
+        owner_id: UUID,
+    ) -> ServerSchema:
+        server = await self.server_repository.get_one(id=server_id, owner_id=owner_id)
+        if not server:
+            raise ValueError(
+                "Server not found or user is not the owner"
+            )  # TODO: Custom exception
+
+        _update_data = ServerUpdateSchema(
+            **update_data.model_dump(),
+            id=server.id,
+            owner_id=owner_id,
+        )
+
+        try:
+            updated_server = await self.server_repository.update(
+                server.id, _update_data
+            )
+            await self.session.commit()
+            return updated_server
+        except SQLAlchemyError as e:
+            await self.session.rollback()
+            raise e
+
+    async def delete_server(
+        self,
+        server_id: UUID,
+        owner_id: UUID,
+    ) -> None:
+
+        server = await self.server_repository.get_one(
+            id=server_id,
+            owner_id=owner_id,
+        )
+
+        if not server:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Server not found",
+            )
+
+        if server.member_count > 1:
+            raise ValueError(
+                "Cannot delete server with members"
+            )  # TODO: Custom exception
+
+        await self.server_repository.delete(server.id)
+        await self.session.commit()
