@@ -26,3 +26,12 @@ repos:
         types: [python]
         files: ^backend/
         args: [--config-file, backend/pyproject.toml]
+
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: bash -c "cd backend && pytest"
+        language: system
+        pass_filenames: false
+        always_run: true
