@@ -4,6 +4,15 @@ from sqlalchemy import select
 
 from src.user.models import UserOrm
 from src.user.schemas import UserSchema
+from tests.data import users
+
+
+@pytest.fixture
+async def current_user(session: AsyncSession) -> UserSchema:
+    user = users[0]
+    query = select(UserOrm).filter_by(id=user["id"])
+    result = await session.scalars(query)
+    return UserSchema.model_validate(result.one())
 
 
 @pytest.fixture
