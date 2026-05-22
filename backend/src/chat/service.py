@@ -9,6 +9,7 @@ from src.chat.schemas import (
 )
 from src.core.services.base_service import BaseService
 from src.chat.unit_of_work import ChatUnitOfWork
+from src.chat.exceptions import SelfChatCreationNotAllowed
 
 
 class ChatService(BaseService):
@@ -17,7 +18,9 @@ class ChatService(BaseService):
         self.uow = uow
 
     async def create_chat(
-        self, creator_id: UUID, data: ChatCreateRequestSchema
+        self,
+        creator_id: UUID,
+        data: ChatCreateRequestSchema,
     ) -> ChatSchema:
         if data.type == ChatType.private:
             return await self._get_or_create_private_chat(creator_id, data)
@@ -25,11 +28,12 @@ class ChatService(BaseService):
             return await self._create_group_chat(creator_id, data)
 
     async def _get_or_create_private_chat(
-        self, creator_id: UUID, data: ChatCreateRequestSchema
+        self,
+        creator_id: UUID,
+        data: ChatCreateRequestSchema,
     ) -> ChatSchema:
         if creator_id == data.target_user_id:
-            # todo: raise error
-            raise ValueError
+            raise SelfChatCreationNotAllowed
 
         assert data.target_user_id
 
@@ -60,7 +64,9 @@ class ChatService(BaseService):
         return chat
 
     async def _create_group_chat(
-        self, creator_id: UUID, data: ChatCreateRequestSchema
+        self,
+        creator_id: UUID,
+        data: ChatCreateRequestSchema,
     ) -> ChatSchema:
         chat = await self.uow.chats.create(
             ChatCreateSchema(
