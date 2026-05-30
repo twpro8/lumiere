@@ -18,12 +18,10 @@ async def create_server(
     server_data: ServerCreateRequestSchema,
     service: ServerServiceDep,
 ) -> ServerSchema:
-
     new_server = await service.create_server(
         server_data=server_data,
         owner_id=current_user_id,
     )
-
     return new_server
 
 
@@ -34,13 +32,11 @@ async def update_server(
     update_data: ServerUpdateRequestSchema,
     service: ServerServiceDep,
 ) -> ServerSchema:
-
     updated_server = await service.update_server(
         update_data=update_data,
         server_id=server_id,
         owner_id=current_user_id,
     )
-
     return updated_server
 
 
