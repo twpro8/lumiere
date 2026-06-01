@@ -1,9 +1,9 @@
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.core.services import BaseService
 from src.server.enums import ServerMemberRole
-from src.server.repository import ServerRepository
 from src.server.schemas import (
     ServerCreateRequestSchema,
     ServerCreateSchema,
@@ -17,18 +17,19 @@ from src.server.exceptions import (
     ServerNotFoundError,
     ServerNotEmptyError,
 )
+from src.server.unit_of_work import ServerUnitOfWork
 
 
 class ServerService(BaseService):
     def __init__(
         self,
         session: AsyncSession,
-        server_repository: ServerRepository,
+        server_unit_of_work: ServerUnitOfWork,
         channel_service: ChannelService,
         server_member_service: ServerMemberService,
     ) -> None:
         super().__init__(session)
-        self.server_repository = server_repository
+        self.uow = server_unit_of_work
         self.channel_service = channel_service
         self.server_member_service = server_member_service
 
@@ -39,7 +40,7 @@ class ServerService(BaseService):
     ) -> ServerSchema:
         # Creating server
         _server_data = ServerCreateSchema(**server_data.model_dump(), owner_id=owner_id)
-        server = await self.server_repository.create(_server_data)
+        server = await self.uow.servers.create(_server_data)
 
         # Adding owner to server members
         await self.server_member_service.create_member(
@@ -56,7 +57,7 @@ class ServerService(BaseService):
             is_commit=False,
         )
 
-        await self.session.commit()
+        await self.uow.commit()
         return server
 
     async def update_server(
@@ -65,7 +66,7 @@ class ServerService(BaseService):
         server_id: UUID,
         owner_id: UUID,
     ) -> ServerSchema:
-        server = await self.server_repository.get_one(id=server_id, owner_id=owner_id)
+        server = await self.uow.servers.get_one(id=server_id, owner_id=owner_id)
         if not server:
             raise ServerNotFoundError
 
@@ -74,9 +75,9 @@ class ServerService(BaseService):
             id=server.id,
             owner_id=owner_id,
         )
+        updated_server = await self.uow.servers.update(server.id, _update_data)
 
-        updated_server = await self.server_repository.update(server.id, _update_data)
-        await self.session.commit()
+        await self.uow.commit()
         return updated_server
 
     async def delete_server(
@@ -84,17 +85,12 @@ class ServerService(BaseService):
         server_id: UUID,
         owner_id: UUID,
     ) -> None:
-
-        server = await self.server_repository.get_one(
-            id=server_id,
-            owner_id=owner_id,
-        )
-
+        server = await self.uow.servers.get_one(id=server_id, owner_id=owner_id)
         if not server:
             raise ServerNotFoundError
 
         if server.member_count > 1:
             raise ServerNotEmptyError
 
-        await self.server_repository.delete(server.id)
-        await self.session.commit()
+        await self.uow.servers.delete(server.id)
+        await self.uow.commit()

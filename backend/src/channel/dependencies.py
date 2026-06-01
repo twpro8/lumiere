@@ -1,6 +1,7 @@
-from typing import Annotated
+from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends
+from src.channel.unit_of_work import ChannelUnitOfWork
 from src.core.dependencies import SessionDep
 from src.channel.repository import ChannelRepository
 from src.channel.service import ChannelService
@@ -14,13 +15,22 @@ def get_channel_repository(
 
 def get_channel_service(
     session: SessionDep,
-    channel_repository: ChannelRepositoryDep,
+    channel_unit_of_work: ChannelUnitOfWorkDep,
 ) -> ChannelService:
     return ChannelService(
         session=session,
-        channel_repository=channel_repository,
+        channel_unit_of_work=channel_unit_of_work,
     )
+
+
+async def get_channel_unit_of_work(
+    session: SessionDep,
+    channel_repository: ChannelRepositoryDep,
+) -> AsyncGenerator[ChannelUnitOfWork]:
+    async with ChannelUnitOfWork(session, channel_repository) as channel_unit_of_work:
+        yield channel_unit_of_work
 
 
 ChannelRepositoryDep = Annotated[ChannelRepository, Depends(get_channel_repository)]
 ChannelServiceDep = Annotated[ChannelService, Depends(get_channel_service)]
+ChannelUnitOfWorkDep = Annotated[ChannelUnitOfWork, Depends(get_channel_unit_of_work)]

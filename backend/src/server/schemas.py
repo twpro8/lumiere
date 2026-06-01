@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import Field
+
 from src.core.schemas import BaseSchema
 
 
