@@ -3,8 +3,8 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.channel.enums import ChannelType
-from src.channel.repository import ChannelRepository
 from src.channel.schemas import ChannelCreateSchema, ChannelSchema
+from src.channel.unit_of_work import ChannelUnitOfWork
 from src.core.services.base_service import BaseService
 
 
@@ -12,10 +12,10 @@ class ChannelService(BaseService):
     def __init__(
         self,
         session: AsyncSession,
-        channel_repository: ChannelRepository,
+        channel_unit_of_work: ChannelUnitOfWork,
     ) -> None:
         super().__init__(session)
-        self.channel_repository = channel_repository
+        self.uow = channel_unit_of_work
 
     async def create_channel(
         self,
@@ -26,7 +26,6 @@ class ChannelService(BaseService):
         is_private: bool = False,
         is_commit: bool = True,
     ) -> ChannelSchema:
-
         channel_data = ChannelCreateSchema(
             server_id=server_id,
             name=name,
@@ -36,8 +35,8 @@ class ChannelService(BaseService):
             is_private=is_private,
         )
 
-        channel = await self.channel_repository.create(channel_data)
+        channel = await self.uow.channels.create(channel_data)
         if is_commit:
-            await self.session.commit()
+            await self.uow.commit()
 
         return channel

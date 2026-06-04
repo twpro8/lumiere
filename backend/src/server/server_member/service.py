@@ -4,21 +4,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.services import BaseService
 from src.server.enums import ServerMemberRole
-from src.server.server_member.repository import ServerMemberRepository
 from src.server.server_member.schemas import (
     ServerMemberCreateSchema,
     ServerMemberSchema,
 )
+from src.server.server_member.unit_of_work import ServerMemberUnitOfWork
 
 
 class ServerMemberService(BaseService):
     def __init__(
         self,
         session: AsyncSession,
-        server_member_repository: ServerMemberRepository,
+        server_member_unit_of_work: ServerMemberUnitOfWork,
     ) -> None:
         super().__init__(session)
-        self.server_member_repository = server_member_repository
+        self.uow = server_member_unit_of_work
 
     async def create_member(
         self,
@@ -33,9 +33,9 @@ class ServerMemberService(BaseService):
             role=role,
         )
 
-        member = await self.server_member_repository.create(member_data)
+        member = await self.uow.server_members.create(member_data)
 
         if is_commit:
-            await self.session.commit()
+            await self.uow.commit()
 
         return member

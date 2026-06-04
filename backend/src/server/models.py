@@ -35,11 +35,19 @@ class ServerMemberOrm(UUIDBase):
 
     server_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("servers.id"),
+        ForeignKey(
+            "servers.id",
+            ondelete="CASCADE",
+            name="fk_server_members_server_id_servers",
+        ),
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("users.id"),
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE",
+            name="fk_server_members_user_id_users",
+        ),
     )
     role: Mapped[str_128] = mapped_column(default=ServerMemberRole.member)
     joined_at: Mapped[timestamp]
