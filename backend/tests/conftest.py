@@ -10,6 +10,7 @@ from src.core.postgres.session import null_pool_session_maker
 from src.main import app
 from src.core.postgres import Base, get_session
 from src.core.models import *  # noqa
+from src.user.schemas import UserSchema
 from tests.dependency_overrides.redis_client import get_fake_redis_client
 from tests.dependency_overrides.session import get_null_pool_session
 from tests.seeder import populate_database
@@ -54,6 +55,25 @@ async def async_client() -> AsyncGenerator[AsyncClient, Any]:
         base_url="http://test",
     ) as async_client:
         yield async_client
+
+
+@pytest.fixture
+async def authed_client(
+    ac: AsyncClient,
+    current_user: UserSchema,
+) -> AsyncGenerator[AsyncClient, Any]:
+    """Authenticated async http client fixture"""
+    response = await ac.post(
+        "/auth/login",
+        json={
+            "username": current_user.username,
+            "password": "12345678",
+        },
+    )
+    assert response.status_code == 200
+    assert ac.cookies.get("access_token")
+    assert ac.cookies.get("refresh_token")
+    yield ac
 
 
 pytest_plugins = [

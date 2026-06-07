@@ -1,3 +1,4 @@
+from datetime import datetime, timezone, timedelta
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -7,8 +8,13 @@ from redis.asyncio import Redis
 
 from src.core.config import settings
 from src.user.repository import UserRepository
+from src.auth.repository import AuthRepository
 from src.core.services import BaseService
-from src.auth.schemas import UserCreateSchema, TokenPair
+from src.auth.schemas import (
+    UserCreateSchema,
+    TokenPair,
+    RefreshTokenCreateSchema,
+)
 from src.auth.security import (
     hash_password,
     hash_token,
@@ -29,10 +35,12 @@ class AuthService(BaseService):
         self,
         session: AsyncSession,
         user_repository: UserRepository,
+        auth_repository: AuthRepository,
         client_redis: Redis,
     ) -> None:
         super().__init__(session)
         self.user_repository = user_repository
+        self.auth_repository = auth_repository
         self.client_redis = client_redis
 
     async def create_user(self, user_data: UserRegisterSchema) -> None:
@@ -72,19 +80,30 @@ class AuthService(BaseService):
 
         return await self._issue_tokens(user.id)
 
-    async def refresh(self, refresh_token: str) -> TokenPair:
+    async def refresh(self, refresh_token_raw: str) -> TokenPair:
         """
         Refresh token
         """
-        token_hash = hash_token(refresh_token)
-        redis_key = f"refresh_token:{token_hash}"
+        token_hash = hash_token(refresh_token_raw)
+        refresh_token = await self.auth_repository.get_one(
+            token_hash=token_hash,
+        )
+        if not refresh_token or refresh_token.expires_at < datetime.now(timezone.utc):
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid refresh token")
 
-        user_id = await self.client_redis.getdel(redis_key)
+        if refresh_token.is_revoked:
+            await self.auth_repository.revoke_all_tokens(refresh_token.user_id)
+            await self.session.commit()
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Compromise detected")
 
+        user_id = refresh_token.user_id
         if not user_id:
-            raise HTTPException(401, "Invalid refresh token")
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid refresh token")
 
-        return await self._issue_tokens(UUID(user_id))
+        await self.auth_repository.revoke_token(refresh_token.id)
+        await self.session.commit()
+
+        return await self._issue_tokens(user_id)
 
     async def _issue_tokens(self, user_id: UUID) -> TokenPair:
         """
@@ -96,12 +115,14 @@ class AuthService(BaseService):
         access_token = create_access_token(payload)
         refresh_token, refresh_token_hash = create_refresh_token()
 
-        redis_key = f"refresh_token:{refresh_token_hash}"
-        await self.client_redis.setex(
-            redis_key,
-            settings.REFRESH_TOKEN_EXPIRE_SECONDS,
-            str(payload.sub),
+        refresh_token_to_add = RefreshTokenCreateSchema(
+            token_hash=refresh_token_hash,
+            user_id=user_id,
+            expires_at=datetime.now(timezone.utc)
+            + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
         )
+        await self.auth_repository.create(refresh_token_to_add)
+        await self.session.commit()
 
         return TokenPair(
             access_token=access_token,

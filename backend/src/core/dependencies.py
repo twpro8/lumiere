@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 
 from src.core.postgres import get_session
-from src.user.repository import UserRepository
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
@@ -44,12 +43,6 @@ def get_refresh_token(
     return refresh_token
 
 
-def get_user_repository(session: SessionDep) -> UserRepository:
-    """get user repository"""
-    return UserRepository(session)
-
-
 RedisDep = Annotated[Redis, Depends(get_redis)]
 AccessTokenDep = Annotated[str, Depends(get_access_token)]
 RefreshTokenDep = Annotated[str, Depends(get_refresh_token)]
-UserRepositoryDep = Annotated[UserRepository, Depends(get_user_repository)]

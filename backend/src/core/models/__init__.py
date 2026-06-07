@@ -14,6 +14,7 @@ from src.server.models import ServerOrm
 from src.channel.models import ChannelOrm
 from src.chat.models import ChatOrm
 from src.message.models import MessageOrm
+from src.auth.models import RefreshTokenOrm
 
 __all__ = [
     "UserOrm",
@@ -21,4 +22,5 @@ __all__ = [
     "ChannelOrm",
     "ChatOrm",
     "MessageOrm",
+    "RefreshTokenOrm",
 ]
