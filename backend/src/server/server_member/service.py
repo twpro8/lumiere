@@ -34,7 +34,6 @@ class ServerMemberService(BaseService):
         )
 
         member = await self.uow.server_members.create(member_data)
-
         if is_commit:
             await self.uow.commit()
 
