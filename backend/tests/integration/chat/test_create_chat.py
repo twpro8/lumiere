@@ -15,7 +15,7 @@ async def test_create_private_chat_valid(
         "type": ChatType.private,
         "target_user_id": str(user.id),
     }
-    response = await authed_client.post("/chats", json=data)
+    response = await authed_client.post("/api/v1/chats", json=data)
     assert response.status_code == 201
 
     response_json = response.json()
@@ -36,7 +36,7 @@ async def test_create_chat_unauthorized(
         "type": ChatType.private,
         "target_user_id": user_id,
     }
-    response = await ac.post("/chats", json=data)
+    response = await ac.post("/api/v1/chats", json=data)
     assert response.status_code == 401
 
 
@@ -48,5 +48,5 @@ async def test_create_private_chat_on_conflict(
         "type": ChatType.private,
         "target_user_id": str(current_user.id),
     }
-    response = await authed_client.post("/chats", json=data)
+    response = await authed_client.post("/api/v1/chats", json=data)
     assert response.status_code == 409

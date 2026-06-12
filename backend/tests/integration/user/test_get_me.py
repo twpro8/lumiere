@@ -4,7 +4,7 @@ from src.user.schemas import UserSchema
 
 
 async def test_get_me(authed_client: AsyncClient, current_user: UserSchema) -> None:
-    response = await authed_client.get("/users/me")
+    response = await authed_client.get("/api/v1/users/me")
     assert response.status_code == 200
 
     user = response.json()
