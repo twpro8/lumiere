@@ -7,6 +7,7 @@ from src.core.config import settings
 from src.core.logging import configure_logging, get_logger
 from src.core.redis import init_redis, close_redis
 from src.core.router import api_router
+from src.utils import custom_generate_unique_id
 
 logger = get_logger(__name__)
 
@@ -33,5 +34,6 @@ app = FastAPI(
     title=settings.APP_NAME,
     lifespan=lifespan,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    generate_unique_id_function=custom_generate_unique_id,
 )
 app.include_router(api_router, prefix=settings.API_V1_STR)
