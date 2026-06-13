@@ -1,7 +1,7 @@
 [project]
-name = "discord-backend"
+name = "lumiere-backend"
 version = "0.1.0"
-description = "Discord project backend"
+description = "Lumiere project backend"
 readme = "README.md"
 requires-python = ">=3.14.3, <4"
 dependencies = [

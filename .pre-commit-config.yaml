@@ -21,17 +21,16 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        entry: mypy
+        entry: uv run mypy --config-file backend/pyproject.toml
         language: system
         types: [python]
         files: ^backend/
-        args: [--config-file, backend/pyproject.toml]
 
   - repo: local
     hooks:
       - id: pytest-check
         name: pytest-check
-        entry: bash -c "cd backend && pytest"
+        entry: bash -c "cd backend && uv run pytest"
         language: system
         pass_filenames: false
-        always_run: true
+        files: ^backend/

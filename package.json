@@ -1,0 +1,8 @@
+{
+  "name": "lumiere",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter frontend dev",
+    "lint": "pnpm --filter frontend lint"
+  }
+}

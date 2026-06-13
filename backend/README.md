@@ -1,1 +1,1 @@
-Discord project backend
+Lumiere project backend

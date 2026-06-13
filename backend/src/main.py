@@ -4,13 +4,10 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 
 from src.core.config import settings
-from src.user.router import router as user_router
-from src.auth.router import router as auth_router
-
-from src.chat.router import router as chat_router
-from src.server import router as server_router
 from src.core.logging import configure_logging, get_logger
 from src.core.redis import init_redis, close_redis
+from src.core.router import api_router
+from src.utils import custom_generate_unique_id
 
 logger = get_logger(__name__)
 
@@ -33,13 +30,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     await close_redis(app.state.redis)
 
 
-app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
-app.include_router(auth_router)
-app.include_router(user_router)
-app.include_router(chat_router)
-app.include_router(server_router)
-
-
-@app.get("/")
-async def root() -> dict[str, str]:
-    return {"message": "Hello World"}
+app = FastAPI(
+    title=settings.APP_NAME,
+    lifespan=lifespan,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    generate_unique_id_function=custom_generate_unique_id,
+)
+app.include_router(api_router, prefix=settings.API_V1_STR)
