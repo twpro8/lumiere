@@ -8,6 +8,7 @@ from redis.asyncio import Redis
 
 from src.core.config import settings
 from src.user.repository import UserRepository
+from src.user.schemas import UserSchema
 from src.auth.repository import AuthRepository
 from src.core.services import BaseService
 from src.auth.schemas import (
@@ -43,7 +44,7 @@ class AuthService(BaseService):
         self.auth_repository = auth_repository
         self.client_redis = client_redis
 
-    async def create_user(self, user_data: UserRegisterSchema) -> None:
+    async def create_user(self, user_data: UserRegisterSchema) -> UserSchema:
         """
         Create a new user
         :param user_data: - user data
@@ -53,8 +54,9 @@ class AuthService(BaseService):
                 **user_data.model_dump(),
                 password_hash=hash_password(user_data.password),
             )
-            await self.user_repository.create(user_data_to_add)
+            user = await self.user_repository.create(user_data_to_add)
             await self.session.commit()
+            return user
         except IntegrityError:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail="User already exists"

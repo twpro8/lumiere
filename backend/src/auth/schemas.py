@@ -12,8 +12,7 @@ class AccessTokenPayload:
     sub: UUID
 
 
-@dataclass
-class TokenPair:
+class TokenPair(BaseSchema):
     access_token: str
     refresh_token: str
 
