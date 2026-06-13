@@ -1,6 +1,6 @@
 from typing import Annotated, cast
 
-from fastapi import Depends, HTTPException, status, Header, Cookie
+from fastapi import Depends, HTTPException, status, Header, Cookie, Body
 from fastapi.requests import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
@@ -27,7 +27,6 @@ def get_access_token(
     ),
 ) -> str:
     """get access token"""
-
     if access_token_header:
         return access_token_header
     elif access_token_cookie:
@@ -40,15 +39,27 @@ def get_access_token(
 
 
 def get_refresh_token(
-    refresh_token: str = Cookie(default=None, include_in_schema=False)
+    refresh_token_cookie: str = Cookie(
+        default=None,
+        include_in_schema=False,
+        alias="refresh_token",
+    ),
+    refresh_token_body: str = Body(
+        default=None,
+        alias="refresh_token",
+        embed=True,
+    ),
 ) -> str:
     """get refresh token"""
-    if refresh_token is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You have not provided a refresh token",
-        )
-    return refresh_token
+    if refresh_token_body:
+        return refresh_token_body
+    elif refresh_token_cookie:
+        return refresh_token_cookie
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="You have not provided an refresh token",
+    )
 
 
 RedisDep = Annotated[Redis, Depends(get_redis)]
