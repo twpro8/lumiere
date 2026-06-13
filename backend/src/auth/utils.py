@@ -27,5 +27,5 @@ def set_tokens_cookie(
         secure=settings.secure_cookies,
         samesite="lax",
         max_age=settings.REFRESH_TOKEN_EXPIRE_SECONDS,
-        path="/auth/refresh",
+        path=f"{settings.API_V1_STR}/auth/refresh",
     )
