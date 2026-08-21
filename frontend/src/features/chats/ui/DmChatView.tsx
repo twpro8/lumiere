@@ -110,9 +110,8 @@ export function DmChatView({
           <p className="text-xs text-muted-foreground">Direct message</p>
         </div>
         <CallButton
-          chatId={chatId}
+          userId={user?.id}
           peerId={resolvedPeerId}
-          peerName={displayName}
           className="ml-auto"
         />
       </header>

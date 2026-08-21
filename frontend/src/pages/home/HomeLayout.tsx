@@ -5,17 +5,22 @@ import { useEffect, useState } from "react";
 import { Outlet, useMatchRoute } from "@tanstack/react-router";
 
 // shared
+import { getUserChannel } from "@/shared/api/socket";
 import { breakpoints } from "@/shared/helpers/breakpoints";
 import { useMediaQuery } from "@/shared/helpers/use-media-query";
 import { Drawer } from "@/shared/ui/drawer";
 import { useShellDrawer } from "@/shared/ui/shell-drawer";
 
 // features
-import { ActiveCallOverlay } from "@/features/calls/ui/ActiveCallOverlay";
-import { IncomingCallModal } from "@/features/calls/ui/IncomingCallModal";
+import { useIncomingCall } from "@/features/calls/model/use-incoming-call";
+import { useOutgoingCall } from "@/features/calls/model/use-outgoing-call";
+import { useOutgoingCallEvents } from "@/features/calls/model/use-outgoing-call-events";
+import { useWebRTC } from "@/features/calls/model/use-webRTC";
+import { CallWindow } from "@/features/calls/ui/CallWindow";
 import { ChannelSidebar } from "@/features/channels/ui/ChannelSidebar";
 import { CreateChannelModal } from "@/features/channels/ui/CreateChannelModal";
 import { FriendPanel } from "@/features/friends/ui/FriendPanel";
+import { useCurrentUser } from "@/features/profile/model/use-current-user";
 import { RealtimeProvider } from "@/features/realtime/RealtimeProvider";
 import { CreateServerModal } from "@/features/servers/ui/CreateServerModal";
 import { ServerMemberPanel } from "@/features/servers/ui/ServerMemberPanel";
@@ -25,6 +30,42 @@ import { ServerSidebar } from "@/features/servers/ui/ServerSidebar";
 export default function HomeLayout() {
   const [isCreateServerOpen, setIsCreateServerOpen] = useState(false);
   const [isCreateChannelOpen, setIsCreateChannelOpen] = useState(false);
+
+  const { data: user } = useCurrentUser();
+  const userId = user?.id;
+  const { callerId, acceptedCallId, acceptCall, dismiss } =
+    useIncomingCall(userId);
+  useOutgoingCallEvents(userId);
+  const outgoingPeerId = useOutgoingCall((state) => state.peerId);
+  const outgoingAcceptedCallId = useOutgoingCall(
+    (state) => state.acceptedCallId,
+  );
+  const clearOutgoing = useOutgoingCall((state) => state.clear);
+
+  const calleeWebRTC = useWebRTC({
+    callId: acceptedCallId,
+    role: "callee",
+  });
+
+  const callerWebRTC = useWebRTC({
+    callId: outgoingAcceptedCallId,
+    role: "caller",
+  });
+
+  function handleCancelOutgoing() {
+    callerWebRTC.hangup();
+    if (userId && outgoingPeerId) {
+      getUserChannel(userId).push("cancel_call", {
+        target_user_id: outgoingPeerId,
+      });
+    }
+    clearOutgoing();
+  }
+
+  function handleHangupIncoming() {
+    calleeWebRTC.hangup();
+    dismiss();
+  }
 
   const isDesktop = useMediaQuery(breakpoints.desktop);
   const isMobile = useMediaQuery(breakpoints.mobile);
@@ -135,8 +176,25 @@ export default function HomeLayout() {
           />
         )}
 
-        <IncomingCallModal />
-        <ActiveCallOverlay />
+        <CallWindow
+          mode="incoming"
+          id={callerId}
+          active={Boolean(acceptedCallId)}
+          muted={calleeWebRTC.muted}
+          onClose={acceptedCallId ? handleHangupIncoming : dismiss}
+          onClick={acceptCall}
+          onToggleMute={calleeWebRTC.toggleMute}
+          remoteStream={calleeWebRTC.remoteStream}
+        />
+        <CallWindow
+          mode="outgoing"
+          id={outgoingPeerId}
+          active={Boolean(outgoingAcceptedCallId)}
+          muted={callerWebRTC.muted}
+          onClose={handleCancelOutgoing}
+          onToggleMute={callerWebRTC.toggleMute}
+          remoteStream={callerWebRTC.remoteStream}
+        />
       </div>
     </RealtimeProvider>
   );
