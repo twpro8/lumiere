@@ -25,6 +25,9 @@ class EventType(StrEnum):
     LEAVE = "room.leave"
     ACK = "ack"
     ERROR = "error"
+    CHANNEL_CREATED = "channel.created"
+    CHANNEL_UPDATED = "channel.updated"
+    CHANNEL_DELETED = "channel.deleted"
 
 
 class Envelope(BaseModel):
