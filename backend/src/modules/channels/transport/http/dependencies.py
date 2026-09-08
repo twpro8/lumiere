@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from src.api.v1.dependencies import SessionDep, TransactionDep
+from src.api.v1.dependencies import RealtimeNotifierDep, SessionDep, TransactionDep
 from src.modules.channels.adapters.persistence.channel_repository_impl import (
     ChannelRepositoryImpl,
 )
@@ -25,35 +25,31 @@ def get_servers_facade(session: SessionDep) -> ServersFacade:
     return build_servers_facade(session)
 
 
-ChannelRepositoryDep = Annotated[ChannelRepository, Depends(get_channel_repository)]
-ServersFacadeDep = Annotated[ServersFacade, Depends(get_servers_facade)]
-
-
 async def get_create_channel_use_case(
     channel_repository: ChannelRepositoryDep,
     servers_facade: ServersFacadeDep,
+    realtime_notifier: RealtimeNotifierDep,
     _tx: TransactionDep,
 ) -> CreateChannelUseCase:
-    # CreateChannelUseCase never commits itself (see its docstring) — this
-    # unused _tx forces the request's auto-commit dependency to actually
-    # build, since nothing else in this provider's graph references it.
-    return CreateChannelUseCase(channel_repository, servers_facade)
+    return CreateChannelUseCase(channel_repository, realtime_notifier, servers_facade)
 
 
 async def get_update_channel_use_case(
     channel_repository: ChannelRepositoryDep,
     servers_facade: ServersFacadeDep,
+    realtime_notifier: RealtimeNotifierDep,
     _tx: TransactionDep,
 ) -> UpdateChannelUseCase:
-    return UpdateChannelUseCase(channel_repository, servers_facade)
+    return UpdateChannelUseCase(channel_repository, servers_facade, realtime_notifier)
 
 
 async def get_delete_channel_use_case(
     channel_repository: ChannelRepositoryDep,
     servers_facade: ServersFacadeDep,
+    realtime_notifier: RealtimeNotifierDep,
     _tx: TransactionDep,
 ) -> DeleteChannelUseCase:
-    return DeleteChannelUseCase(channel_repository, servers_facade)
+    return DeleteChannelUseCase(channel_repository, servers_facade, realtime_notifier)
 
 
 async def get_channels_use_case(
@@ -72,6 +68,8 @@ async def get_channel_by_id_use_case(
     return GetChannelByIDUseCase(channel_repository, servers_facade)
 
 
+ChannelRepositoryDep = Annotated[ChannelRepository, Depends(get_channel_repository)]
+ServersFacadeDep = Annotated[ServersFacade, Depends(get_servers_facade)]
 CreateChannelUseCaseDep = Annotated[
     CreateChannelUseCase, Depends(get_create_channel_use_case)
 ]

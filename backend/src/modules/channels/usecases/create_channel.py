@@ -1,7 +1,11 @@
+from dataclasses import asdict
 from uuid import UUID
 
+from src.core.logging import get_logger
+from src.core.realtime import EventType, RealtimeNotifier
+from src.core.realtime.rooms import server_room
 from src.modules.channels.domain.entities.channel import Channel
-from src.modules.channels.domain.entities.dtos import ChannelCreate
+from src.modules.channels.domain.entities.dtos import ChannelCreate, channel_to_dto
 from src.modules.channels.domain.enums import ChannelType
 from src.modules.channels.domain.exceptions import ChannelConflictError
 from src.modules.channels.domain.repositories.channel_repository import (
@@ -9,15 +13,19 @@ from src.modules.channels.domain.repositories.channel_repository import (
 )
 from src.modules.servers.public.facade import ServersFacade
 
+logger = get_logger(__name__)
+
 
 class CreateChannelUseCase:
     def __init__(
         self,
         channel_repository: ChannelRepository,
+        realtime_notifier: RealtimeNotifier | None = None,
         servers_facade: ServersFacade | None = None,
     ) -> None:
         self._channels = channel_repository
         self._servers = servers_facade
+        self._realtime = realtime_notifier
 
     async def __call__(
         self,
@@ -46,4 +54,17 @@ class CreateChannelUseCase:
             topic=topic,
             is_private=is_private,
         )
-        return await self._channels.create(channel_data)
+        channel = await self._channels.create(channel_data)
+        await self._notify(server_id, channel)
+        return channel
+
+    async def _notify(self, server_id: UUID, channel: Channel) -> None:
+        if self._realtime is not None:
+            try:
+                await self._realtime.publish_to_room(
+                    room=server_room(server_id),
+                    event_type=EventType.CHANNEL_CREATED,
+                    payload=asdict(channel_to_dto(channel)),
+                )
+            except Exception:
+                logger.exception("realtime.publish_failed", server_id=str(server_id))
