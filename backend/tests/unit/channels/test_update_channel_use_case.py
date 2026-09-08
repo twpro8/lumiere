@@ -2,6 +2,8 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from src.core.realtime.envelope import EventType
+from src.core.realtime.rooms import server_room
 from src.modules.channels.domain.entities.channel import Channel
 from src.modules.channels.domain.entities.dtos import (
     ChannelCreate,
@@ -19,7 +21,10 @@ from src.modules.servers.domain.exceptions import (
     NotServerMemberError,
     NotServerOwnerError,
 )
-from tests.unit.channels.fakes import FakeChannelRepository
+from tests.unit.channels.fakes import (
+    FakeChannelRepository,
+    FakeRealtimeNotifier,
+)
 from tests.unit.servers.fakes import (
     FakeServerMemberRepository,
     FakeServerRepository,
@@ -52,9 +57,12 @@ def _use_case(
     channels: FakeChannelRepository,
     server_members: FakeServerMemberRepository,
     servers: FakeServerRepository,
+    realtime: FakeRealtimeNotifier | None = None,
 ) -> UpdateChannelUseCase:
     servers_facade = FakeServersFacade(server_members, servers)
-    return UpdateChannelUseCase(channels, servers_facade)
+    return UpdateChannelUseCase(
+        channels, servers_facade, realtime or FakeRealtimeNotifier()
+    )
 
 
 async def test_owner_can_rename_channel() -> None:
@@ -297,3 +305,59 @@ async def test_non_member_cannot_update() -> None:
             server_id=server_id,
             update_data=ChannelUpdateData(name="renamed"),
         )
+
+
+async def test_publishes_channel_updated_event() -> None:
+    channels, server_members, servers = (
+        FakeChannelRepository(),
+        FakeServerMemberRepository(),
+        FakeServerRepository(),
+    )
+    realtime = FakeRealtimeNotifier()
+    use_case = _use_case(channels, server_members, servers, realtime)
+    owner_id = uuid4()
+    channel, server_id = await _make_owned_channel(
+        channels, server_members, servers, owner_id
+    )
+
+    updated = await use_case(
+        channel_id=channel.id,
+        user_id=owner_id,
+        server_id=server_id,
+        update_data=ChannelUpdateData(name="renamed"),
+    )
+
+    assert len(realtime.room_published) == 1
+    room, event_type, payload = realtime.room_published[0]
+    assert room == server_room(server_id)
+    assert event_type == EventType.CHANNEL_UPDATED
+    assert payload["id"] == updated.id
+    assert payload["name"] == "renamed"
+    assert payload["server_id"] == server_id
+
+
+async def test_publishes_event_on_partial_update() -> None:
+    channels, server_members, servers = (
+        FakeChannelRepository(),
+        FakeServerMemberRepository(),
+        FakeServerRepository(),
+    )
+    realtime = FakeRealtimeNotifier()
+    use_case = _use_case(channels, server_members, servers, realtime)
+    owner_id = uuid4()
+    channel, server_id = await _make_owned_channel(
+        channels, server_members, servers, owner_id
+    )
+
+    await use_case(
+        channel_id=channel.id,
+        user_id=owner_id,
+        server_id=server_id,
+        update_data=ChannelUpdateData(topic="new topic"),
+    )
+
+    assert len(realtime.room_published) == 1
+    _, event_type, payload = realtime.room_published[0]
+    assert event_type == EventType.CHANNEL_UPDATED
+    assert payload["topic"] == "new topic"
+    assert payload["name"] == "general"
