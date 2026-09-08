@@ -2,6 +2,8 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from src.core.realtime.envelope import EventType
+from src.core.realtime.rooms import server_room
 from src.modules.channels.domain.entities.dtos import ChannelCreate
 from src.modules.channels.domain.exceptions import (
     ChannelNotFoundError,
@@ -14,7 +16,10 @@ from src.modules.servers.domain.exceptions import (
     NotServerMemberError,
     NotServerOwnerError,
 )
-from tests.unit.channels.fakes import FakeChannelRepository
+from tests.unit.channels.fakes import (
+    FakeChannelRepository,
+    FakeRealtimeNotifier,
+)
 from tests.unit.servers.fakes import (
     FakeServerMemberRepository,
     FakeServerRepository,
@@ -42,9 +47,12 @@ def _use_case(
     channels: FakeChannelRepository,
     server_members: FakeServerMemberRepository,
     servers: FakeServerRepository,
+    realtime: FakeRealtimeNotifier | None = None,
 ) -> DeleteChannelUseCase:
     servers_facade = FakeServersFacade(server_members, servers)
-    return DeleteChannelUseCase(channels, servers_facade)
+    return DeleteChannelUseCase(
+        channels, servers_facade, realtime or FakeRealtimeNotifier()
+    )
 
 
 async def test_owner_can_delete_extra_channel() -> None:
@@ -160,3 +168,49 @@ async def test_non_member_cannot_delete() -> None:
         await use_case(channel_id=channel.id, user_id=outsider_id, server_id=server_id)
 
     assert await channels.get_by_id(channel.id) is not None
+
+
+async def test_publishes_channel_deleted_event() -> None:
+    channels, server_members, servers = (
+        FakeChannelRepository(),
+        FakeServerMemberRepository(),
+        FakeServerRepository(),
+    )
+    realtime = FakeRealtimeNotifier()
+    use_case = _use_case(channels, server_members, servers, realtime)
+    owner_id = uuid4()
+    server_id = await _make_owned_server(server_members, servers, owner_id)
+    channel = await channels.create(
+        ChannelCreate(server_id=server_id, name="general", topic=None)
+    )
+    await channels.create(ChannelCreate(server_id=server_id, name="extra", topic=None))
+
+    await use_case(channel_id=channel.id, user_id=owner_id, server_id=server_id)
+
+    assert len(realtime.room_published) == 1
+    room, event_type, payload = realtime.room_published[0]
+    assert room == server_room(server_id)
+    assert event_type == EventType.CHANNEL_DELETED
+    assert payload["id"] == channel.id
+    assert payload["name"] == "general"
+    assert payload["server_id"] == server_id
+
+
+async def test_no_event_when_only_channel_rejected() -> None:
+    channels, server_members, servers = (
+        FakeChannelRepository(),
+        FakeServerMemberRepository(),
+        FakeServerRepository(),
+    )
+    realtime = FakeRealtimeNotifier()
+    use_case = _use_case(channels, server_members, servers, realtime)
+    owner_id = uuid4()
+    server_id = await _make_owned_server(server_members, servers, owner_id)
+    channel = await channels.create(
+        ChannelCreate(server_id=server_id, name="general", topic=None)
+    )
+
+    with pytest.raises(OnlyChannelDeletionError):
+        await use_case(channel_id=channel.id, user_id=owner_id, server_id=server_id)
+
+    assert realtime.room_published == []

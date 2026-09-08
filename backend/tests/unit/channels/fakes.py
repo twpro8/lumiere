@@ -1,6 +1,9 @@
+from collections.abc import Mapping
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID, uuid4
 
+from src.core.realtime.envelope import EventType
 from src.modules.channels.domain.entities.channel import Channel
 from src.modules.channels.domain.entities.dtos import ChannelCreate, ChannelUpdate
 from src.shared.domain.unset import set_fields
@@ -71,3 +74,13 @@ class FakeChannelRepository:
             c for c in self.channels.values() if c.server_id == server_id
         ]
         return max((c.position for c in server_channels), default=0)
+
+
+class FakeRealtimeNotifier:
+    def __init__(self) -> None:
+        self.room_published: list[tuple[str, EventType, dict[str, Any]]] = []
+
+    async def publish_to_room(
+        self, room: str, event_type: EventType, payload: Mapping[str, Any]
+    ) -> None:
+        self.room_published.append((room, event_type, dict(payload)))
